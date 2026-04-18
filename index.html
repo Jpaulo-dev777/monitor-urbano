@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Monitor Urbano</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="css/style.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="toast" id="toast"></div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span id="relogio">06:00</span>
+    <div class="status-icons">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>
+      </svg>
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <rect x="2" y="7" width="16" height="10" rx="2"/>
+        <path d="M22 11v2a2 2 0 0 1-2 2h-2V9h2a2 2 0 0 1 2 2z"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ===== VIEW HOME ===== -->
+<div class="scroll-area" id="view-home">
+
+  <!-- HEADER COM LOGO -->
+  <div class="header">
+    <img
+      src="./images/81d2de84-5db6-4410-8335-f79c745968e2.png"
+      alt="Prefeitura de Jaboatão dos Guararapes"
+      class="logo-prefeitura"      
+    />
+    <div class="dots-icon">
+      <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <div class="sub-header">
+    <span class="sub-label">Ocorrências Ativas</span>
+    <span class="ver-todos" onclick="goTo('view-lista')">Ver Todos</span>
+  </div>
+  <div class="alert-count" id="alertCount"><span>🔔 </span>12 Alertas</div>
+  <!-- ... resto do conteúdo ... -->
+
+
+    <!-- Estatísticas -->
+    <div class="section-header">
+      <span class="section-title">Estatísticas</span>
+      <span class="ver-mais" onclick="goTo('view-lista')">Ver Mais</span>
+    </div>
+    <div class="stats-card">
+      <div class="stat-items">
+        <div class="stat-row"><div class="stat-dot" style="background:#2563eb"></div>5 Alagamentos</div>
+        <div class="stat-row"><div class="stat-dot" style="background:#dc2626"></div>3 Barreiras</div>
+        <div class="stat-row"><div class="stat-dot" style="background:#ca8a04"></div>2 Lixos</div>
+        <div class="stat-row"><div class="stat-dot" style="background:#6b7280"></div>2 Outros</div>
+      </div>
+      <div class="chart-wrap">
+        <div class="y-axis">
+          <span class="y-label">5</span><span class="y-label">3</span>
+          <span class="y-label">2</span><span class="y-label">0</span>
+        </div>
+        <div class="bars-area" id="barsArea"></div>
+      </div>
+    </div>
+
+    <!-- Serviços -->
+    <div class="section-header"><span class="section-title">Serviços</span></div>
+    <div class="services-grid">
+
+      <!-- Linha 1 -->
+      <div class="service-item" onclick="filtrarMapa('Alagamento')">
+        <div class="service-icon si-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 20c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/>
+            <path d="M2 14c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/>
+          </svg>
+        </div>
+        <span class="service-label">Alagamento</span>
+      </div>
+
+      <div class="service-item" onclick="filtrarMapa('Barreira')">
+        <div class="service-icon si-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="9" width="20" height="6" rx="2"/>
+            <line x1="7" y1="9" x2="7" y2="15"/>
+            <line x1="12" y1="9" x2="12" y2="15"/>
+            <line x1="17" y1="9" x2="17" y2="15"/>
+          </svg>
+        </div>
+        <span class="service-label">Barreira</span>
+      </div>
+
+      <div class="service-item" onclick="filtrarMapa('Lixo')">
+        <div class="service-icon si-yellow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          </svg>
+        </div>
+        <span class="service-label">Lixo</span>
+      </div>
+
+      <div class="service-item" onclick="openRelatar()">
+        <div class="service-icon si-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+          </svg>
+        </div>
+        <span class="service-label">Relatar</span>
+      </div>
+
+      <!-- Linha 2 -->
+      <div class="service-item" onclick="toast('Câmera em breve!')">
+        <div class="service-icon si-dark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+        <span class="service-label">Foto</span>
+      </div>
+
+      <div class="service-item" onclick="goTo('view-lista')">
+        <div class="service-icon si-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <span class="service-label">Relatório</span>
+      </div>
+
+      <!-- Contato com modal de emergência -->
+      <div class="service-item" onclick="openContato()">
+        <div class="service-icon si-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </div>
+        <span class="service-label">Contato</span>
+      </div>
+
+      <!-- Config com tema -->
+      <div class="service-item" onclick="openConfig()">
+        <div class="service-icon si-gray">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <span class="service-label">Config.</span>
+      </div>
+
+      <!-- Linha 3 - novos ícones -->
+      <!-- Vistoria com ícone personalizado -->
+<div class="service-item" onclick="openVistoria()">
+  <div class="service-icon si-orange">
+    <img
+      src="images/sem fundo icone balança.png"
+      alt="Vistoria"
+      class="service-icon-img"
+    />
+  </div>
+  <span class="service-label">Vistoria</span>
+</div>
+
+
+      <div class="service-item" onclick="filtrarMapa('Buraco')">
+        <div class="service-icon si-brown">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <ellipse cx="12" cy="16" rx="8" ry="4"/>
+            <path d="M4 12c0-2.2 3.6-4 8-4s8 1.8 8 4"/>
+            <line x1="12" y1="8" x2="12" y2="4"/>
+          </svg>
+        </div>
+        <span class="service-label">Buraco</span>
+      </div>
+
+      <div class="service-item" onclick="filtrarMapa('Iluminação')">
+        <div class="service-icon si-yellow2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <line x1="12" y1="18" x2="12" y2="22"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="2" y1="12" x2="6" y2="12"/>
+            <line x1="18" y1="12" x2="22" y2="12"/>
+            <circle cx="12" cy="12" r="4"/>
+          </svg>
+        </div>
+        <span class="service-label">Iluminação</span>
+      </div>
+
+      <div class="service-item" onclick="goTo('view-mapa')">
+        <div class="service-icon si-teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+          </svg>
+        </div>
+        <span class="service-label">Ver Mapa</span>
+      </div>
+
+    </div>
+
+    <!-- Recentes com Dropdown -->
+    <div class="section-header dropdown-header" onclick="toggleRecentes()">
+      <span class="section-title">Recentes</span>
+      <div class="dropdown-arrow-wrap">
+        <span class="recentes-count-badge" id="recentesBadge">12</span>
+        <svg class="dropdown-arrow" id="recentesArrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </div>
+    <div class="ocorrencias recentes-lista" id="listaHome" style="display:none;"></div>
+
+    <button class="action-btn btn-relatar btn-full" onclick="goTo('view-mapa')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;">
+        <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+      </svg>
+      Ver Alertas no Mapa
+    </button>
+  </div>
+
+  <!-- ===== VIEW LISTA ===== -->
+  <div class="scroll-area" id="view-lista" style="display:none;">
+    <div class="header">
+      <button class="btn-back" onclick="goTo('view-home')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg> Voltar
+      </button>
+      <span class="page-title">Todas as Ocorrências</span>
+      <div style="width:60px"></div>
+    </div>
+    <div class="ocorrencias" style="margin-top:16px;" id="listaTodas"></div>
+  </div>
+
+  <!-- ===== VIEW MAPA ===== -->
+  <div class="scroll-area alerta-view" id="view-mapa">
+    <div class="alerta-header">
+      <button class="btn-back" onclick="goTo('view-home')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>Início
+      </button>
+      <div class="alerta-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2">
+          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+        </svg>
+        Alerta Monitor
+        <span class="alerta-count-badge" id="mapaCount">12</span>
+      </div>
+      <div style="width:48px"></div>
+    </div>
+
+    <div class="alerta-info">
+      <span>Jaboatão dos Guararapes · PE</span>
+      <span><span class="live-dot"></span>Ao vivo</span>
+    </div>
+
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Buscar ocorrência ou endereço..." oninput="buscarMapa(this.value)">
+    </div>
+
+    <div class="chips" id="chips">
+      <button class="chip on" data-t="Todos" onclick="filtrarMapa('Todos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Todos
+      </button>
+      <button class="chip off" data-t="Alagamento" onclick="filtrarMapa('Alagamento')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/><path d="M2 14c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/></svg>Alagamento
+      </button>
+      <button class="chip off" data-t="Barreira" onclick="filtrarMapa('Barreira')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="9" width="20" height="6" rx="2"/><line x1="7" y1="9" x2="7" y2="15"/></svg>Barreira
+      </button>
+      <button class="chip off" data-t="Lixo" onclick="filtrarMapa('Lixo')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Lixo
+      </button>
+      <button class="chip off" data-t="Outros" onclick="filtrarMapa('Outros')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>Outros
+      </button>
+    </div>
+
+    <div class="map-wrap">
+      <div id="leafletMap"></div>
+    </div>
+
+    <button class="btn-localizacao" onclick="centralizarUsuario()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+      </svg>
+      Minha Localização
+    </button>
+
+    <div class="mini-card">
+      <div class="mini-card-title">Ocorrências no mapa</div>
+      <div class="mini-list" id="miniLista"></div>
+    </div>
+
+    <button class="action-btn btn-relatar btn-full" onclick="openRelatar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+      </svg>
+      Reportar Ocorrência
+    </button>
+  </div>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="goTo('view-home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg><span>Início</span>
+    </div>
+    <div class="nav-item" id="nav-msg" onclick="toast('Mensagens em breve!')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg><span>Mensagens</span>
+    </div>
+    <button class="nav-fab" onclick="openRelatar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+    <div class="nav-item" id="nav-bell" onclick="goTo('view-lista')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg><span>Alertas</span>
+    </div>
+    <div class="nav-item" id="nav-map" onclick="goTo('view-mapa')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+      </svg><span>Mapa</span>
+    </div>
+  </div>
+
+  <!-- ===== MODAL RELATAR ===== -->
+  <div class="modal-overlay" id="modal-relatar" onclick="if(event.target===this)closeRelatar()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Registrar Ocorrência</div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">TIPO DE OCORRÊNCIA</label>
+          <select class="form-select" id="tipo-select">
+            <option value="">Selecione...</option>
+            <option>Alagamento</option><option>Barreira</option><option>Lixo</option>
+            <option>Buraco</option><option>Iluminação</option><option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ENDEREÇO</label>
+          <input class="form-input" type="text" id="end-input" placeholder="Ex: Av. Principal, 100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">DESCRIÇÃO</label>
+          <textarea class="form-textarea" id="desc-input" placeholder="Descreva a ocorrência..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">URGÊNCIA</label>
+          <select class="form-select" id="urg-select">
+            <option>Alta</option><option>Média</option><option>Baixa</option>
+          </select>
+        </div>
+        <button class="btn-submit" onclick="submitRelatar()">Enviar Ocorrência</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL CONTATO EMERGÊNCIA ===== -->
+  <div class="modal-overlay" id="modal-contato" onclick="if(event.target===this)closeContato()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        Contatos de Emergência
+      </div>
+      <div class="contatos-grid">
+        <a href="tel:199" class="contato-card contato-defesa">
+          <div class="contato-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          <div class="contato-info">
+            <span class="contato-nome">Defesa Civil</span>
+            <span class="contato-num">199</span>
+          </div>
+          <div class="contato-call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+        </a>
+
+        <a href="tel:193" class="contato-card contato-bombeiros">
+          <div class="contato-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2c0 0-5 4-5 9a5 5 0 0 0 10 0c0-5-5-9-5-9z"/>
+              <path d="M12 12c0 0-2 1.5-2 3a2 2 0 0 0 4 0c0-1.5-2-3-2-3z"/>
+            </svg>
+          </div>
+          <div class="contato-info">
+            <span class="contato-nome">Bombeiros</span>
+            <span class="contato-num">193</span>
+          </div>
+          <div class="contato-call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+        </a>
+
+        <a href="tel:190" class="contato-card contato-policia">
+          <div class="contato-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+            </svg>
+          </div>
+          <div class="contato-info">
+            <span class="contato-nome">Polícia</span>
+            <span class="contato-num">190</span>
+          </div>
+          <div class="contato-call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+        </a>
+
+        <a href="tel:192" class="contato-card contato-samu">
+          <div class="contato-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+          </div>
+          <div class="contato-info">
+            <span class="contato-nome">SAMU</span>
+            <span class="contato-num">192</span>
+          </div>
+          <div class="contato-call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+        </a>
+      </div>
+      <button class="btn-fechar" onclick="closeContato()">Fechar</button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL CONFIG ===== -->
+  <div class="modal-overlay" id="modal-config" onclick="if(event.target===this)closeConfig()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Configurações
+      </div>
+
+      <!-- Toggle Tema -->
+      <div class="config-section">
+        <div class="config-row">
+          <div class="config-row-left">
+            <div class="config-icon-wrap" id="themeIcon">
+              <!-- ícone trocado via JS -->
+            </div>
+            <div>
+              <div class="config-row-title">Tema da Interface</div>
+              <div class="config-row-sub" id="themeLabel">Modo Claro ativo</div>
+            </div>
+          </div>
+          <div class="toggle-wrap" onclick="toggleTema()">
+            <div class="toggle-track" id="toggleTrack">
+              <div class="toggle-thumb" id="toggleThumb"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-divider"></div>
+
+      <!-- Notificações -->
+      <div class="config-section">
+        <div class="config-section-title">Notificações</div>
+        <div class="config-row">
+          <div class="config-row-left">
+            <div class="config-icon-wrap ci-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+            </div>
+            <div>
+              <div class="config-row-title">Alertas em tempo real</div>
+              <div class="config-row-sub">Receber notificações de novas ocorrências</div>
+            </div>
+          </div>
+          <div class="toggle-wrap" onclick="toggleConfig(this)">
+            <div class="toggle-track active" >
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="config-row-left">
+            <div class="config-icon-wrap ci-red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <div>
+              <div class="config-row-title">Alertas de urgência alta</div>
+              <div class="config-row-sub">Som para ocorrências críticas</div>
+            </div>
+          </div>
+          <div class="toggle-wrap" onclick="toggleConfig(this)">
+            <div class="toggle-track active">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-divider"></div>
+
+      <!-- Mapa -->
+      <div class="config-section">
+        <div class="config-section-title">Mapa</div>
+        <div class="config-row">
+          <div class="config-row-left">
+            <div class="config-icon-wrap ci-teal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+              </svg>
+            </div>
+            <div>
+              <div class="config-row-title">Raio de alertas</div>
+              <div class="config-row-sub">5 km ao redor</div>
+            </div>
+          </div>
+          <div class="toggle-wrap" onclick="toggleConfig(this)">
+            <div class="toggle-track active">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-fechar" onclick="closeConfig()">Fechar</button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL VISTORIA ===== -->
+  <div class="modal-overlay" id="modal-vistoria" onclick="if(event.target===this)closeVistoria()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        Solicitar Vistoria
+      </div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">TIPO DE VISTORIA</label>
+          <select class="form-select" id="vistoria-tipo">
+            <option value="">Selecione...</option>
+            <option>Estrutura predial</option>
+            <option>Encosta / Talude</option>
+            <option>Via pública</option>
+            <option>Rede elétrica</option>
+            <option>Rede de esgoto</option>
+            <option>Área de risco</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ENDEREÇO</label>
+          <input class="form-input" type="text" id="vistoria-end" placeholder="Ex: Rua das Flores, 200">
+        </div>
+        <div class="form-group">
+          <label class="form-label">DESCRIÇÃO DO PROBLEMA</label>
+          <textarea class="form-textarea" id="vistoria-desc" placeholder="Descreva o que precisa ser vistoriado..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">URGÊNCIA</label>
+          <select class="form-select" id="vistoria-urg">
+            <option>Alta</option><option>Média</option><option>Baixa</option>
+          </select>
+        </div>
+        <button class="btn-submit" style="background:linear-gradient(135deg,#ea580c,#f97316);" onclick="submitVistoria()">
+          Solicitar Vistoria
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<script src="js/app.js"></script>
+</body>
+</html>
