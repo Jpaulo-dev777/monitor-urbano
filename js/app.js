@@ -717,5 +717,20 @@ atualizarRelogio();
 renderLista(dados, 'listaHome');
 renderLista(dados, 'listaTodas');
 renderChart();
-atualizarContadores();
+function atualizarContadores() {
+  const n = dados.length;
+  document.getElementById('alertCount').innerHTML = `<span>🔔 </span>${n} Alertas`;
+  document.getElementById('mapaCount').textContent    = n;
+  document.getElementById('fullMapCount').textContent = n;
+  document.getElementById('recentesBadge').textContent= n;
+
+  // KPI Strip
+  const kpiAlta     = document.getElementById('kpiAlta');
+  const kpiResolvido= document.getElementById('kpiResolvido');
+  const kpiAtend    = document.getElementById('kpiAtend');
+  if (kpiAlta)      kpiAlta.textContent      = dados.filter(o => o.urg === 'Alta').length;
+  if (kpiResolvido) kpiResolvido.textContent  = dados.filter(o => o.status === 'Resolvido').length;
+  if (kpiAtend)     kpiAtend.textContent      = dados.filter(o => o.status === 'Em atendimento').length;
+}
+;
 atualizarIconeTema();
