@@ -493,50 +493,50 @@ function esconderPreviewCEP() {
   if (preview) preview.style.display = 'none';
 }
 
-/* ============================================================
-   ROTA — usa lat/lng real da ocorrência (já geocodificada)
-   ============================================================ */
+// /* ============================================================
+//    ROTA — usa lat/lng real da ocorrência (já geocodificada)
+//    ============================================================ */
 
-window.abrirGoogleMaps = function(idx) {
-  const o = dados[idx];
-  if (!o) return;
+// window.abrirGoogleMaps = function(idx) {
+//   const o = dados[idx];
+//   if (!o) return;
 
-  const destino = `${o.lat},${o.lng}`;
+//   const destino = `${o.lat},${o.lng}`;
 
-  const abrirURL = (origem) => {
-    const url = origem
-      ? `https://www.google.com/maps/dir/?api=1&origin=${origem}&destination=${destino}&travelmode=driving`
-      : `https://www.google.com/maps/search/?api=1&query=${destino}`;
-    window.open(url, '_blank');
-  };
+//   const abrirURL = (origem) => {
+//     const url = origem
+//       ? `https://www.google.com/maps/dir/?api=1&origin=${origem}&destination=${destino}&travelmode=driving`
+//       : `https://www.google.com/maps/search/?api=1&query=${destino}`;
+//     window.open(url, '_blank');
+//   };
 
-  if (navigator.geolocation) {
-    // Timeout de 5s para não travar o usuário
-    const timeout = setTimeout(() => {
-      abrirURL(null);
-      toast('🗺️ Abrindo Google Maps...');
-    }, 5000);
+//   if (navigator.geolocation) {
+//     // Timeout de 5s para não travar o usuário
+//     const timeout = setTimeout(() => {
+//       abrirURL(null);
+//       toast('🗺️ Abrindo Google Maps...');
+//     }, 5000);
 
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        clearTimeout(timeout);
-        abrirURL(`${pos.coords.latitude},${pos.coords.longitude}`);
-        toast('🗺️ Rota traçada no Google Maps!');
-      },
-      () => {
-        clearTimeout(timeout);
-        abrirURL(null);
-        toast('🗺️ Abrindo destino no Google Maps...');
-      },
-      { timeout: 4500, maximumAge: 60000 }
-    );
-  } else {
-    abrirURL(null);
-    toast('🗺️ Abrindo Google Maps...');
-  }
+//     navigator.geolocation.getCurrentPosition(
+//       pos => {
+//         clearTimeout(timeout);
+//         abrirURL(`${pos.coords.latitude},${pos.coords.longitude}`);
+//         toast('🗺️ Rota traçada no Google Maps!');
+//       },
+//       () => {
+//         clearTimeout(timeout);
+//         abrirURL(null);
+//         toast('🗺️ Abrindo destino no Google Maps...');
+//       },
+//       { timeout: 4500, maximumAge: 60000 }
+//     );
+//   } else {
+//     abrirURL(null);
+//     toast('🗺️ Abrindo Google Maps...');
+//   }
 
-  closeRota();
-};
+//   closeRota();
+// };
 
 window.abrirWaze = function(idx) {
   const o = dados[idx];
@@ -716,11 +716,63 @@ function renderZonasRisco(mapaInst) {
 /* ============================================================
    NAVEGAÇÃO
    ============================================================ */
-const VIEWS   = ['view-home','view-lista','view-mapa','view-mapa-full'];
-const NAV_IDS = {
-  'view-home':'nav-home','view-lista':'nav-bell',
-  'view-mapa':'nav-map', 'view-mapa-full':'nav-map'
+/* ── IDs de todas as views + nav items ── */
+const VIEWS = [
+  'view-home',
+  'view-lista',
+  'view-mapa',
+  'view-mapa-full',
+  'view-chat'          // ✅ nova view
+];
+
+const NAV_MAP = {
+  'view-home':     'nav-home',
+  'view-lista':    'nav-bell',
+  'view-mapa':     'nav-map',
+  'view-mapa-full':'nav-map',
+  'view-chat':     'nav-chat'   // ✅ ativa o item correto
 };
+
+function goTo(viewId) {
+  /* Esconde todas as views */
+  VIEWS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
+  /* Remove active de todos os nav-items */
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  /* Mostra a view alvo */
+  const target = document.getElementById(viewId);
+  if (!target) return;
+
+  /* view-chat usa flex; outras usam block/flex conforme classe */
+  target.style.display = (viewId === 'view-chat') ? 'flex' : 'block';
+
+  /* Ativa o nav-item correspondente */
+  const navId = NAV_MAP[viewId];
+  if (navId) {
+    const navEl = document.getElementById(navId);
+    if (navEl) navEl.classList.add('active');
+  }
+
+  /* Reinicializa mapas se necessário */
+  if (viewId === 'view-mapa' && window.mapaLeaflet) {
+    setTimeout(() => window.mapaLeaflet.invalidateSize(), 100);
+  }
+  if (viewId === 'view-mapa-full' && window.mapaLeafletFull) {
+    setTimeout(() => window.mapaLeafletFull.invalidateSize(), 100);
+  }
+
+  /* Foca no input ao abrir o chat */
+  if (viewId === 'view-chat') {
+    setTimeout(() => document.getElementById('chat-input')?.focus(), 300);
+    /* Remove badge do nav ao entrar na aba */
+    document.getElementById('nav-chat')?.classList.remove('has-badge');
+  }
+}
+
 
 function goTo(id) {
   VIEWS.forEach(v => {
@@ -1514,6 +1566,317 @@ const _origOpenRelatar = openRelatar;
     }
   };
 })();
+
+/* ============================================================
+   ASSISTENTE IA — Gemini 2.0 Flash (correção do erro 400)
+   ============================================================ */
+
+const GEMINI_API_KEY = 'AIzaSyCiLgusko8YBq7nbk5C3k18kCLw3alxnZU';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+const SYSTEM_PROMPT = `Você é o Assistente de Monitoramento Urbano de Jaboatão dos Guararapes - PE, Brasil.
+Seu foco exclusivo é: clima, prevenção de desastres, alagamentos, deslizamentos e emergências urbanas.
+
+REGRAS:
+- Responda SEMPRE em português brasileiro
+- Seja direto, claro e acessível (linguagem simples)
+- Priorize informações práticas e acionáveis
+- Para emergências, sempre forneça telefones úteis:
+  • Defesa Civil Jaboatão: (81) 3469-5701
+  • SAMU: 192 | Bombeiros: 193 | Polícia: 190 | Defesa Civil Nacional: 199
+- Se não souber algo específico local, oriente de forma geral mas mencione a Defesa Civil
+- Respostas curtas e objetivas (máx. 200 palavras, exceto quando pedir detalhes)
+- Use emojis com moderação para facilitar leitura
+- Nunca responda sobre assuntos fora do escopo (política, entretenimento, etc.)
+- Contexto: Jaboatão dos Guararapes fica na Região Metropolitana do Recife,
+  área sujeita a chuvas intensas especialmente de março a agosto`;
+
+/* ─────────────────────────────────────────
+   HISTÓRICO — pares completos [user, model]
+   Garante alternância correta e nunca corrompe
+───────────────────────────────────────── */
+let historicoChat = []; // Sempre pares: [{role:'user',...}, {role:'model',...}]
+
+/* ─────────────────────────────────────────
+   ENVIAR MENSAGEM
+───────────────────────────────────────── */
+async function enviarMensagem() {
+  const input = document.getElementById('chat-input');
+  if (!input) return;
+
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  input.value = '';
+  autoResize(input);
+
+  adicionarMensagem(texto, 'usuario');
+  ocultarPerguntasRapidas();
+
+  const digitando = mostrarDigitando();
+  const btnEnviar = document.getElementById('btn-enviar');
+  if (btnEnviar) btnEnviar.disabled = true;
+  setStatusChat('⏳ Digitando...', true);
+
+  try {
+    const resposta = await chamarGemini(texto);
+    digitando.remove();
+    adicionarMensagem(resposta, 'bot');
+  } catch (erro) {
+    digitando.remove();
+    console.error('[Gemini] Erro:', erro.message);
+    adicionarMensagem(obterMsgErro(erro), 'bot');
+  } finally {
+    if (btnEnviar) btnEnviar.disabled = false;
+    setStatusChat('● Online', false);
+  }
+}
+
+/* ─────────────────────────────────────────
+   CHAMAR API GEMINI — sem erro 400
+───────────────────────────────────────── */
+async function chamarGemini(pergunta) {
+
+  /* ✅ Monta o conteúdo com histórico anterior + nova pergunta
+     Garante que começa sempre com 'user' e alterna corretamente */
+  const contents = [
+    ...historicoChat,          // pares anteriores (user+model)
+    { role: 'user', parts: [{ text: pergunta }] }  // nova pergunta
+  ];
+
+  const body = {
+    system_instruction: {
+      parts: [{ text: SYSTEM_PROMPT }]
+    },
+    contents,
+    generationConfig: {
+      temperature:     0.7,
+      maxOutputTokens: 600,
+      topP:            0.9,
+    }
+  };
+
+  /* AbortController manual — compatível com todos os browsers */
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 20000);
+
+  let resp;
+  try {
+    resp = await fetch(GEMINI_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+      signal:  controller.signal
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  /* Loga o erro HTTP real para debug */
+  if (!resp.ok) {
+    let detalhes = '';
+    try {
+      const errJson = await resp.json();
+      detalhes = errJson?.error?.message || JSON.stringify(errJson?.error || errJson);
+    } catch (_) {
+      detalhes = await resp.text().catch(() => '');
+    }
+    console.error(`[Gemini] HTTP ${resp.status}:`, detalhes);
+    throw new Error(`HTTP_${resp.status}::${detalhes}`);
+  }
+
+  const data  = await resp.json();
+  const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!texto) {
+    /* Pode ser bloqueio de segurança — loga o motivo */
+    const motivo = data?.candidates?.[0]?.finishReason
+                || data?.promptFeedback?.blockReason
+                || 'desconhecido';
+    console.warn('[Gemini] Resposta vazia. Motivo:', motivo, JSON.stringify(data));
+    throw new Error(`RESPOSTA_VAZIA::${motivo}`);
+  }
+
+  /* ✅ Só salva no histórico DEPOIS de receber resposta com sucesso
+     Evita histórico corrompido em caso de erro */
+  historicoChat.push(
+    { role: 'user',  parts: [{ text: pergunta }] },
+    { role: 'model', parts: [{ text: texto    }] }
+  );
+
+  /* ✅ Mantém apenas os últimos 5 pares (10 mensagens)
+     e garante que sempre começa com 'user' */
+  if (historicoChat.length > 10) {
+    historicoChat = historicoChat.slice(-10);
+    /* Garante que o primeiro item é sempre 'user' */
+    if (historicoChat[0]?.role !== 'user') {
+      historicoChat = historicoChat.slice(1);
+    }
+  }
+
+  return texto;
+}
+
+/* ─────────────────────────────────────────
+   MENSAGEM DE ERRO AMIGÁVEL
+───────────────────────────────────────── */
+function obterMsgErro(erro) {
+  const msg = erro?.message || '';
+
+  if (msg.includes('abort') || msg.toLowerCase().includes('aborterror')) {
+    return '⏱️ A resposta demorou muito. Verifique sua conexão e tente novamente.';
+  }
+  if (msg.includes('HTTP_400')) {
+    return '❌ Erro na requisição (400). Recarregue a página e tente novamente.';
+  }
+  if (msg.includes('HTTP_401') || msg.includes('HTTP_403')) {
+    return '🔑 Chave de API inválida. Verifique em aistudio.google.com.';
+  }
+  if (msg.includes('HTTP_429')) {
+    return '⏳ Muitas requisições. Aguarde alguns segundos e tente novamente.';
+  }
+  if (msg.includes('HTTP_5')) {
+    return '🔧 Serviço do Google indisponível no momento. Tente em alguns instantes.';
+  }
+  if (msg.includes('SAFETY')) {
+    return '🚫 Mensagem bloqueada por segurança. Tente reformular sua pergunta.';
+  }
+  if (msg.includes('RESPOSTA_VAZIA')) {
+    return '🤔 Não obtive resposta. Tente reformular sua pergunta.';
+  }
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+    return '📡 Sem conexão com a internet.\n\nEmergências: Defesa Civil **(81) 3469-5701**';
+  }
+
+  return '⚠️ Erro inesperado. Abra o console (F12) para ver o detalhe.\n\nAjuda imediata: **(81) 3469-5701**';
+}
+
+/* ─────────────────────────────────────────
+   PERGUNTA RÁPIDA
+───────────────────────────────────────── */
+function perguntaRapida(texto) {
+  const input = document.getElementById('chat-input');
+  if (input) { input.value = texto; autoResize(input); }
+  enviarMensagem();
+}
+
+/* ─────────────────────────────────────────
+   ADICIONAR MENSAGEM NO CHAT
+───────────────────────────────────────── */
+function adicionarMensagem(texto, tipo) {
+  const container = document.getElementById('chat-mensagens');
+  if (!container) return;
+
+  const div = document.createElement('div');
+  div.className = `msg ${tipo}`;
+
+  const html = texto
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,     '<em>$1</em>')
+    .replace(/\n/g,             '<br>');
+
+  div.innerHTML = `
+    <span class="msg-avatar">${tipo === 'bot' ? '🤖' : '👤'}</span>
+    <div class="msg-balao">${html}</div>
+  `;
+
+  container.appendChild(div);
+  requestAnimationFrame(() => {
+    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+  });
+
+  if (tipo === 'bot') notificarBadgeChat();
+}
+
+/* ─────────────────────────────────────────
+   ANIMAÇÃO "DIGITANDO"
+───────────────────────────────────────── */
+function mostrarDigitando() {
+  const container = document.getElementById('chat-mensagens');
+  if (!container) return { remove: () => {} };
+
+  const div = document.createElement('div');
+  div.className = 'msg bot msg-digitando';
+  div.innerHTML = `
+    <span class="msg-avatar">🤖</span>
+    <div class="msg-balao">
+      <span class="dots"><span>●</span><span>●</span><span>●</span></span>
+    </div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+/* ─────────────────────────────────────────
+   UTILITÁRIOS
+───────────────────────────────────────── */
+function ocultarPerguntasRapidas() {
+  const el = document.getElementById('chat-rapidas');
+  if (el) el.style.display = 'none';
+}
+
+function setStatusChat(texto, digitando) {
+  const el = document.getElementById('chat-status');
+  if (!el) return;
+  el.textContent = texto;
+  el.className   = 'chat-status' + (digitando ? ' digitando' : '');
+}
+
+function chatKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    enviarMensagem();
+  }
+}
+
+function autoResize(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function notificarBadgeChat() {
+  const viewChat = document.getElementById('view-chat');
+  const oculto   = !viewChat
+                || viewChat.style.display === 'none'
+                || viewChat.style.display === '';
+  if (oculto) {
+    document.getElementById('nav-chat')?.classList.add('has-badge');
+  }
+}
+
+/* ─────────────────────────────────────────
+   TESTE DE CONEXÃO ao carregar a página
+───────────────────────────────────────── */
+async function testarConexaoGemini() {
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 5000);
+
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`,
+      { signal: controller.signal }
+    );
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      console.warn(`[Gemini] Teste falhou HTTP ${resp.status}:`, err?.error?.message);
+      setStatusChat('⚠️ API indisponível', false);
+    } else {
+      console.info('[Gemini] ✅ Conexão OK — pronto para uso');
+    }
+  } catch (e) {
+    console.warn('[Gemini] Sem conexão:', e.message);
+    setStatusChat('📡 Sem conexão', false);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', testarConexaoGemini);
+
+
+
+
 
 
 
