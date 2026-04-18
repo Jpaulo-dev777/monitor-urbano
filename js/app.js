@@ -153,34 +153,95 @@ function renderLista(lista, containerId) {
 /* ============================================================
    LEAFLET — POPUP COM CRUD
    ============================================================ */
+/* ── Leaflet Popup com botão de rota ── */
 function criarPopupHTML(o, idx) {
-  const b = BADGE_COR[o.urg] || BADGE_COR.Média;
+  const b      = BADGE_COR[o.urg] || BADGE_COR.Média;
+  const stCls  = {
+    'Aberto':         'background:#FFEBEE;color:#C62828',
+    'Em atendimento': 'background:#FFF8E1;color:#E65100',
+    'Resolvido':      'background:#E8F5E9;color:#2E7D32',
+  }[o.status] || 'background:#FFEBEE;color:#C62828';
+
   return `
-    <div style="font-family:'Sora',sans-serif;min-width:190px;">
-      <b style="font-size:13px;color:#1a1a2e;">${sanitize(o.tipo)}</b><br>
-      <span style="font-size:11px;color:#8B7CA8;">${sanitize(o.local)}</span>
-      ${o.desc ? `<span style="font-size:11px;color:#555;display:block;margin-top:4px;">${sanitize(o.desc)}</span>` : ''}
-      <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:10px;color:#8B7CA8;">${sanitize(o.tempo)}</span>
-        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;
-          background:${b.bg};color:${b.c};">${sanitize(o.urg)}</span>
+    <div style="font-family:'Sora',sans-serif;min-width:200px;padding:2px;">
+
+      <!-- Cabeçalho do popup -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:34px;height:34px;border-radius:10px;
+                    background:${(COR[o.tipo]||'#6b7280')}22;
+                    display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          ${getIconColor(o.tipo)}
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#0D1B3E;">
+            ${sanitize(o.tipo)}
+          </div>
+          <div style="font-size:10px;color:#5A6A8A;margin-top:1px;">
+            ${sanitize(o.local)}
+          </div>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;margin-top:10px;">
+
+      <!-- Descrição (se houver) -->
+      ${o.desc ? `
+        <div style="font-size:11px;color:#5A6A8A;margin-bottom:8px;
+                    padding:6px 8px;background:#F5F7FF;border-radius:8px;
+                    line-height:1.4;">
+          ${sanitize(o.desc)}
+        </div>` : ''}
+
+      <!-- Badges de urgência e status -->
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+        <span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;
+          background:${b.bg};color:${b.c};">
+          ${sanitize(o.urg)}
+        </span>
+        <span style="font-size:10px;font-weight:800;padding:3px 8px;
+                     border-radius:10px;${stCls}">
+          ${sanitize(o.status || 'Aberto')}
+        </span>
+        <span style="font-size:10px;color:#8B9DB5;margin-left:auto;align-self:center;">
+          ${sanitize(o.tempo)}
+        </span>
+      </div>
+
+      <!-- Divisor -->
+      <div style="height:1px;background:rgba(27,79,204,0.10);margin-bottom:10px;"></div>
+
+      <!-- Botão principal: Como Chegar -->
+      <button onclick="abrirRota(${idx})"
+        style="width:100%;padding:9px;border-radius:10px;border:none;
+               background:linear-gradient(135deg,#0F2D7A,#2E6EF7);
+               color:white;font-family:Sora,sans-serif;
+               font-size:12px;font-weight:800;cursor:pointer;
+               display:flex;align-items:center;justify-content:center;gap:6px;
+               margin-bottom:7px;box-shadow:0 4px 12px rgba(27,79,204,0.30);
+               letter-spacing:0.2px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="white" stroke-width="2.5">
+          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+        </svg>
+        Como Chegar
+      </button>
+
+      <!-- Botões secundários: Editar e Remover -->
+      <div style="display:flex;gap:6px;">
         <button onclick="editarDoMapa(${idx})"
-          style="flex:1;padding:6px;border-radius:8px;border:none;
-                 background:#EDE9FE;color:#7B2FBE;font-family:Sora,sans-serif;
-                 font-size:11px;font-weight:600;cursor:pointer;">
+          style="flex:1;padding:7px;border-radius:9px;border:1.5px solid rgba(27,79,204,0.20);
+                 background:#E8EFFE;color:#1B4FCC;font-family:Sora,sans-serif;
+                 font-size:11px;font-weight:700;cursor:pointer;">
           ✏️ Editar
         </button>
         <button onclick="deletarDoMapa(${idx})"
-          style="flex:1;padding:6px;border-radius:8px;border:none;
-                 background:#fee2e2;color:#dc2626;font-family:Sora,sans-serif;
-                 font-size:11px;font-weight:600;cursor:pointer;">
+          style="flex:1;padding:7px;border-radius:9px;border:1.5px solid rgba(229,57,53,0.18);
+                 background:#FFEBEE;color:#E53935;font-family:Sora,sans-serif;
+                 font-size:11px;font-weight:700;cursor:pointer;">
           🗑️ Remover
         </button>
       </div>
     </div>`;
 }
+
 
 /* ── Mapa Normal ── */
 let mapa = null, marcadores = [], userMarker = null, mapaReady = false;
@@ -249,6 +310,280 @@ function renderMiniLista(lista) {
 }
 
 /* ── Filtros e busca ── */
+/* ============================================================
+   AUTOCOMPLETE DE ENDEREÇO — Nominatim suggestions
+   ============================================================ */
+
+let autocompleteTimer = null;
+
+function initAutocomplete() {
+  const input = document.getElementById('end-input');
+  if (!input) return;
+
+  input.addEventListener('input', function () {
+    clearTimeout(autocompleteTimer);
+    const val = this.value.trim();
+
+    // Limpa preview e sugestões se campo vazio
+    if (val.length < 4) {
+      esconderSugestoes();
+      esconderPreviewCEP();
+      return;
+    }
+
+    // Debounce: aguarda 600ms após parar de digitar
+    autocompleteTimer = setTimeout(() => buscarSugestoes(val), 600);
+  });
+
+  // Fecha sugestões ao clicar fora
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#end-input') && !e.target.closest('#sugestoes-lista')) {
+      esconderSugestoes();
+    }
+  });
+}
+
+async function buscarSugestoes(query) {
+  try {
+    const params = new URLSearchParams({
+      format:          'json',
+      q:               `${query}, ${CIDADE_PADRAO}, PE, Brasil`,
+      limit:           '5',
+      countrycodes:    'br',
+      'accept-language': 'pt-BR',
+      addressdetails:  '1',
+    });
+
+    const resp = await fetch(
+      `https://nominatim.openstreetmap.org/search?${params}`,
+      { headers: { 'User-Agent': 'MonitorUrbanoJaboatao/1.0' } }
+    );
+    if (!resp.ok) return;
+
+    const resultados = await resp.json();
+    exibirSugestoes(resultados, query);
+  } catch (e) {
+    console.warn('[Autocomplete]', e);
+  }
+}
+
+function exibirSugestoes(resultados, queryOriginal) {
+  let lista = document.getElementById('sugestoes-lista');
+
+  if (!lista) {
+    lista = document.createElement('div');
+    lista.id = 'sugestoes-lista';
+    lista.style.cssText = `
+      position:absolute; z-index:99999;
+      background:var(--surface); border-radius:12px;
+      box-shadow:0 8px 32px rgba(15,45,122,0.18);
+      border:1.5px solid var(--border-strong);
+      overflow:hidden; max-height:220px; overflow-y:auto;
+      scrollbar-width:none;
+    `;
+    const formGroup = document.getElementById('end-input').parentNode;
+    formGroup.style.position = 'relative';
+    formGroup.appendChild(lista);
+  }
+
+  if (!resultados || resultados.length === 0) {
+    lista.innerHTML = `
+      <div style="padding:12px 14px;font-size:12px;color:var(--text-muted);
+                  font-family:Sora,sans-serif;font-weight:500;">
+        Nenhum resultado encontrado
+      </div>`;
+    lista.style.display = 'block';
+    return;
+  }
+
+  lista.innerHTML = resultados.map((r, i) => {
+    // Extrai partes legíveis do display_name
+    const partes = r.display_name.split(',').slice(0, 3).map(p => p.trim());
+    const titulo = partes[0] || r.display_name;
+    const sub    = partes.slice(1).join(', ');
+    const cep    = r.address?.postcode || '';
+
+    return `
+      <div class="sugestao-item"
+           onclick="selecionarSugestao('${sanitize(titulo).replace(/'/g,"\\'")}',
+                                       '${r.lat}','${r.lon}',
+                                       '${sanitize(cep)}')"
+           style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                  cursor:pointer;transition:background 0.15s;border-bottom:
+                  1px solid var(--border);font-family:Sora,sans-serif;">
+        <div style="flex-shrink:0;color:var(--brand);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:var(--text);
+                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            ${sanitize(titulo)}
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);font-weight:500;
+                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            ${sanitize(sub)} ${cep ? `· CEP ${cep}` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Hover effect via JS
+  lista.querySelectorAll('.sugestao-item').forEach(item => {
+    item.addEventListener('mouseenter', () => item.style.background = 'var(--brand-pale)');
+    item.addEventListener('mouseleave', () => item.style.background = '');
+  });
+
+  lista.style.display = 'block';
+}
+
+/* ── Seleciona uma sugestão do autocomplete ── */
+window.selecionarSugestao = function(titulo, lat, lng, cep) {
+  const input = document.getElementById('end-input');
+  input.value = titulo;
+  input.dataset.lat = lat;
+  input.dataset.lng = lng;
+  input.dataset.cep = cep;
+
+  esconderSugestoes();
+
+  // Mostra preview com CEP
+  if (cep) mostrarPreviewCEP(cep, titulo);
+};
+
+function esconderSugestoes() {
+  const lista = document.getElementById('sugestoes-lista');
+  if (lista) lista.style.display = 'none';
+}
+
+/* ── Preview do CEP abaixo do campo ── */
+async function mostrarPreviewCEP(cep, endereco) {
+  let preview = document.getElementById('end-preview');
+  if (!preview) {
+    preview = document.createElement('div');
+    preview.id = 'end-preview';
+    const formGroup = document.getElementById('end-input').parentNode;
+    formGroup.appendChild(preview);
+  }
+
+  preview.style.cssText = `
+    display:flex; align-items:center; gap:8px;
+    padding:8px 12px; margin-top:6px;
+    background:var(--brand-pale); border-radius:10px;
+    border:1px solid var(--border-strong);
+    font-family:Sora,sans-serif; font-size:11px; font-weight:600;
+    color:var(--brand); animation:fadeIn 0.2s ease;
+  `;
+  preview.innerHTML = `
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.5">
+      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+    📮 CEP <strong>${cep}</strong> — endereço localizado
+    <span style="margin-left:auto;color:var(--success);font-size:10px;">✅ Exato</span>
+  `;
+}
+
+function esconderPreviewCEP() {
+  const preview = document.getElementById('end-preview');
+  if (preview) preview.style.display = 'none';
+}
+
+/* ============================================================
+   ROTA — usa lat/lng real da ocorrência (já geocodificada)
+   ============================================================ */
+
+window.abrirGoogleMaps = function(idx) {
+  const o = dados[idx];
+  if (!o) return;
+
+  const destino = `${o.lat},${o.lng}`;
+
+  const abrirURL = (origem) => {
+    const url = origem
+      ? `https://www.google.com/maps/dir/?api=1&origin=${origem}&destination=${destino}&travelmode=driving`
+      : `https://www.google.com/maps/search/?api=1&query=${destino}`;
+    window.open(url, '_blank');
+  };
+
+  if (navigator.geolocation) {
+    // Timeout de 5s para não travar o usuário
+    const timeout = setTimeout(() => {
+      abrirURL(null);
+      toast('🗺️ Abrindo Google Maps...');
+    }, 5000);
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        clearTimeout(timeout);
+        abrirURL(`${pos.coords.latitude},${pos.coords.longitude}`);
+        toast('🗺️ Rota traçada no Google Maps!');
+      },
+      () => {
+        clearTimeout(timeout);
+        abrirURL(null);
+        toast('🗺️ Abrindo destino no Google Maps...');
+      },
+      { timeout: 4500, maximumAge: 60000 }
+    );
+  } else {
+    abrirURL(null);
+    toast('🗺️ Abrindo Google Maps...');
+  }
+
+  closeRota();
+};
+
+window.abrirWaze = function(idx) {
+  const o = dados[idx];
+  if (!o) return;
+
+  // Waze aceita lat/lng direto — sempre preciso pois usamos coords geocodificadas
+  const url = `https://waze.com/ul?ll=${o.lat},${o.lng}&navigate=yes&zoom=17`;
+  window.open(url, '_blank');
+
+  closeRota();
+  toast('🔵 Abrindo Waze com destino exato!');
+};
+
+window.abrirAppleMaps = function(idx) {
+  const o = dados[idx];
+  if (!o) return;
+
+  const url = `http://maps.apple.com/?daddr=${o.lat},${o.lng}&dirflg=d`;
+  window.open(url, '_blank');
+
+  closeRota();
+  toast('🍎 Abrindo Apple Maps...');
+};
+
+window.copiarCoordenadas = function(idx) {
+  const o = dados[idx];
+  if (!o) return;
+
+  const texto = `${o.lat.toFixed(6)}, ${o.lng.toFixed(6)}`;
+  const msg   = o.cep
+    ? `📋 Coords copiadas! CEP: ${o.cep}`
+    : '📋 Coordenadas copiadas!';
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(texto).then(() => toast(msg));
+  } else {
+    const el = document.createElement('textarea');
+    el.value = texto; document.body.appendChild(el);
+    el.select(); document.execCommand('copy');
+    document.body.removeChild(el);
+    toast(msg);
+  }
+
+  closeRota();
+};
+
+
 function filtrarMapa(tipo) {
   document.querySelectorAll('#chips .chip').forEach(c => {
     c.className = 'chip ' + (c.dataset.t === tipo ? 'on' : 'off');
@@ -483,81 +818,360 @@ function atualizarLegendaChart(contagem) {
 }
 
 /* ============================================================
-   GEOCODING
+   SISTEMA DE GEOCODING + CEP — Completo
+   ============================================================
+
+   Fluxo:
+   1. Usuário digita endereço no campo
+   2. buscarCEPporEndereco() → ViaCEP retorna CEP + endereço normalizado
+   3. geocodificarEndereco() → Nominatim com query estruturada retorna lat/lng
+   4. Fallback: Nominatim free-form → fallback geográfico de Jaboatão
    ============================================================ */
-async function obterCoordenadasEndereco(endereco) {
+
+const CIDADE_PADRAO   = 'Jaboatão dos Guararapes';
+const ESTADO_PADRAO   = 'PE';
+const PAIS_PADRAO     = 'Brasil';
+
+// Centro geográfico de Jaboatão dos Guararapes
+const LAT_CENTRO = -8.1128;
+const LNG_CENTRO = -34.9092;
+
+/* ── 1. Busca CEP pelo endereço usando ViaCEP ── */
+async function buscarCEPporEndereco(enderecoRaw) {
   try {
-    const query = encodeURIComponent(endereco + ', Jaboatão dos Guararapes, PE, Brasil');
-    const resp  = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`,
-      { headers: { 'Accept-Language': 'pt-BR' } }
-    );
-    const result = await resp.json();
-    if (result?.length > 0)
-      return { lat: parseFloat(result[0].lat), lng: parseFloat(result[0].lon), encontrado: true };
-  } catch (e) { console.warn('Geocoding falhou:', e); }
+    // Limpa o endereço: remove números soltos de CEP, normaliza espaços
+    const endLimpo = enderecoRaw
+      .replace(/\b\d{5}-?\d{3}\b/g, '')   // remove CEP se já veio no campo
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Tenta extrair rua e número do endereço
+    // Exemplos: "Av. Principal, 340" / "Rua das Flores s/n" / "Praça Central"
+    const partes  = endLimpo.split(',');
+    const rua     = (partes[0] || endLimpo).trim();
+
+    // ViaCEP busca por endereço: /ws/UF/Cidade/Logradouro/json/
+    const cidadeEncoded = encodeURIComponent(CIDADE_PADRAO);
+    const ruaEncoded    = encodeURIComponent(rua);
+    const url = `https://viacep.com.br/ws/${ESTADO_PADRAO}/${cidadeEncoded}/${ruaEncoded}/json/`;
+
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+
+    const resultado = await resp.json();
+
+    // ViaCEP retorna array quando busca por endereço
+    if (Array.isArray(resultado) && resultado.length > 0) {
+      // Pega o primeiro resultado com CEP válido
+      const item = resultado.find(r => r.cep && !r.erro) || resultado[0];
+      if (item && item.cep) {
+        return {
+          cep:        item.cep,
+          logradouro: item.logradouro || rua,
+          bairro:     item.bairro     || '',
+          cidade:     item.localidade || CIDADE_PADRAO,
+          uf:         item.uf         || ESTADO_PADRAO,
+          enderecoCompleto: montarEnderecoCompleto(item, partes[1])
+        };
+      }
+    }
+    return null;
+  } catch (e) {
+    console.warn('[ViaCEP] Falha na busca por endereço:', e);
+    return null;
+  }
+}
+
+/* ── Monta endereço completo normalizado ── */
+function montarEnderecoCompleto(viaCepItem, numeroRaw) {
+  const numero = numeroRaw ? numeroRaw.trim() : '';
+  const partes = [
+    viaCepItem.logradouro,
+    numero     || '',
+    viaCepItem.bairro    || '',
+    `${viaCepItem.localidade || CIDADE_PADRAO} - ${viaCepItem.uf || ESTADO_PADRAO}`,
+    `CEP ${viaCepItem.cep}`
+  ].filter(Boolean);
+  return partes.join(', ');
+}
+
+/* ── 2. Geocodifica via Nominatim (query ESTRUTURADA) ── */
+async function geocodificarEstruturado(enderecoRaw, dadosCEP) {
+  try {
+    let params;
+
+    if (dadosCEP) {
+      // Com dados do ViaCEP: usa query estruturada precisa
+      const partes = enderecoRaw.split(',');
+      const numero = partes[1] ? partes[1].trim().replace(/\D/g, '') : '';
+      const rua    = dadosCEP.logradouro;
+      const street = numero ? `${numero} ${rua}` : rua;
+
+      params = new URLSearchParams({
+        format:          'json',
+        addressdetails:  '1',
+        limit:           '3',
+        'accept-language': 'pt-BR',
+        countrycodes:    'br',
+        street:          street,
+        city:            dadosCEP.cidade,
+        state:           'Pernambuco',
+        postalcode:      dadosCEP.cep.replace('-', ''),
+        country:         PAIS_PADRAO,
+      });
+    } else {
+      // Sem ViaCEP: query estruturada com cidade fixa
+      const partes = enderecoRaw.split(',');
+      const street = partes[0].trim();
+
+      params = new URLSearchParams({
+        format:          'json',
+        addressdetails:  '1',
+        limit:           '5',
+        'accept-language': 'pt-BR',
+        countrycodes:    'br',
+        street:          street,
+        city:            CIDADE_PADRAO,
+        state:           'Pernambuco',
+        country:         PAIS_PADRAO,
+      });
+    }
+
+    const url  = `https://nominatim.openstreetmap.org/search?${params}`;
+    const resp = await fetch(url, {
+      headers: {
+        'Accept-Language': 'pt-BR',
+        // User-Agent obrigatório pelo Nominatim ToS
+        'User-Agent': 'MonitorUrbanoJaboatao/1.0'
+      }
+    });
+
+    if (!resp.ok) return null;
+    const resultados = await resp.json();
+
+    if (resultados && resultados.length > 0) {
+      // Filtra resultados dentro de Jaboatão / Pernambuco
+      const filtrado = resultados.find(r =>
+        r.display_name &&
+        (r.display_name.toLowerCase().includes('jaboatão') ||
+         r.display_name.toLowerCase().includes('jaboatao') ||
+         r.display_name.toLowerCase().includes('pernambuco') ||
+         r.display_name.toLowerCase().includes('pe,'))
+      ) || resultados[0];
+
+      return {
+        lat:         parseFloat(filtrado.lat),
+        lng:         parseFloat(filtrado.lon),
+        displayName: filtrado.display_name,
+        encontrado:  true,
+        precisao:    'exata'
+      };
+    }
+    return null;
+  } catch (e) {
+    console.warn('[Nominatim Estruturado] Falha:', e);
+    return null;
+  }
+}
+
+/* ── 3. Fallback: Nominatim free-form ── */
+async function geocodificarFreeForm(enderecoRaw) {
+  try {
+    // Estratégia: tenta 3 variações da query, do mais específico ao menos
+    const queries = [
+      `${enderecoRaw}, ${CIDADE_PADRAO}, ${ESTADO_PADRAO}, ${PAIS_PADRAO}`,
+      `${enderecoRaw}, ${CIDADE_PADRAO}, Pernambuco`,
+      `${enderecoRaw.split(',')[0]}, ${CIDADE_PADRAO}, Brasil`,
+    ];
+
+    for (const q of queries) {
+      const params = new URLSearchParams({
+        format:          'json',
+        q:               q,
+        limit:           '3',
+        countrycodes:    'br',
+        'accept-language': 'pt-BR',
+      });
+
+      const resp = await fetch(
+        `https://nominatim.openstreetmap.org/search?${params}`,
+        { headers: { 'User-Agent': 'MonitorUrbanoJaboatao/1.0' } }
+      );
+      if (!resp.ok) continue;
+
+      const resultados = await resp.json();
+      if (resultados && resultados.length > 0) {
+        const r = resultados[0];
+        return {
+          lat:         parseFloat(r.lat),
+          lng:         parseFloat(r.lon),
+          displayName: r.display_name,
+          encontrado:  true,
+          precisao:    'aproximada'
+        };
+      }
+
+      // Aguarda 300ms entre requisições (respeita rate limit do Nominatim)
+      await new Promise(res => setTimeout(res, 300));
+    }
+    return null;
+  } catch (e) {
+    console.warn('[Nominatim FreeForm] Falha:', e);
+    return null;
+  }
+}
+
+/* ── 4. Fallback geográfico inteligente ── */
+function fallbackGeografico(enderecoRaw) {
+  // Gera ponto próximo ao centro de Jaboatão com variação pequena
+  // para não sobrepor todos os pins de fallback no mesmo lugar
+  const seed  = enderecoRaw.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const angulo = (seed % 360) * (Math.PI / 180);
+  const raio   = 0.003 + (seed % 100) * 0.00015; // 300m a 1.8km do centro
+
   return {
-    lat: -8.1128 + (Math.random()-0.5)*0.018,
-    lng: -34.9092 + (Math.random()-0.5)*0.018,
-    encontrado: false
+    lat:        LAT_CENTRO + raio * Math.sin(angulo),
+    lng:        LNG_CENTRO + raio * Math.cos(angulo),
+    encontrado: false,
+    precisao:   'fallback',
+    displayName: `${enderecoRaw} (posição aproximada)`
   };
 }
 
+/* ── FUNÇÃO PRINCIPAL — substitui a antiga obterCoordenadasEndereco ── */
+async function obterCoordenadasEndereco(enderecoRaw) {
+  if (!enderecoRaw || !enderecoRaw.trim()) return fallbackGeografico('centro');
+
+  console.log(`[Geocoding] Buscando: "${enderecoRaw}"`);
+
+  // ETAPA 1 — Busca CEP no ViaCEP
+  const dadosCEP = await buscarCEPporEndereco(enderecoRaw);
+  console.log('[ViaCEP]', dadosCEP);
+
+  // ETAPA 2 — Geocoding estruturado (com ou sem CEP)
+  const coordsEstruturado = await geocodificarEstruturado(enderecoRaw, dadosCEP);
+  if (coordsEstruturado) {
+    console.log('[Nominatim Estruturado] ✅', coordsEstruturado);
+    return { ...coordsEstruturado, cep: dadosCEP?.cep || null };
+  }
+
+  // ETAPA 3 — Fallback free-form
+  const coordsFreeForm = await geocodificarFreeForm(enderecoRaw);
+  if (coordsFreeForm) {
+    console.log('[Nominatim FreeForm] ✅', coordsFreeForm);
+    return { ...coordsFreeForm, cep: dadosCEP?.cep || null };
+  }
+
+  // ETAPA 4 — Fallback geográfico
+  console.warn('[Geocoding] Nenhuma API retornou resultado. Usando fallback geográfico.');
+  return { ...fallbackGeografico(enderecoRaw), cep: dadosCEP?.cep || null };
+}
+
+
 /* ============================================================
-   MODAL RELATAR
+   MODAL RELATAR — com geocoding melhorado + CEP
    ============================================================ */
 function openRelatar()  { document.getElementById('modal-relatar').classList.add('open'); }
-function closeRelatar() { document.getElementById('modal-relatar').classList.remove('open'); }
+function closeRelatar() {
+  document.getElementById('modal-relatar').classList.remove('open');
+  // Limpa preview de CEP/endereço
+  const preview = document.getElementById('end-preview');
+  if (preview) preview.style.display = 'none';
+}
 
 let enviando = false;
+
 async function submitRelatar() {
   if (enviando) return;
+
   const tipo = document.getElementById('tipo-select').value;
   const end  = document.getElementById('end-input').value.trim();
   const desc = document.getElementById('desc-input').value.trim();
   const urg  = document.getElementById('urg-select').value;
+
   if (!tipo) { toast('Selecione o tipo de ocorrência!'); return; }
   if (!end)  { toast('Informe o endereço!'); return; }
 
   enviando = true;
   const btn = document.querySelector('#modal-relatar .btn-submit');
-  btn.textContent = '📍 Buscando localização...';
+
+  // Estado: carregando
+  btn.innerHTML = `
+    <span style="display:flex;align-items:center;gap:8px;justify-content:center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="white" stroke-width="2.5"
+           style="animation:spinIcon 1s linear infinite;">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83
+                 M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+      Buscando localização...
+    </span>`;
   btn.disabled = true;
 
-  const coords = await obterCoordenadasEndereco(end);
-  dados.unshift({
-    tipo, local: end, desc: desc||'', tempo: 'Agora',
-    urg, status: 'Aberto', lat: coords.lat, lng: coords.lng
-  });
+  try {
+    const coords = await obterCoordenadasEndereco(end);
 
-  syncTudo();
-  closeRelatar();
-  document.getElementById('tipo-select').value = '';
-  document.getElementById('end-input').value   = '';
-  document.getElementById('desc-input').value  = '';
-  btn.textContent = 'Enviar Ocorrência';
-  btn.disabled    = false;
-  enviando        = false;
+    // Monta endereço exibido no card (com CEP se encontrado)
+    const endExibido = coords.cep
+      ? `${end} — CEP ${coords.cep}`
+      : end;
 
-  toast(coords.encontrado ? `✅ ${tipo} marcado no mapa!` : `✅ Registrado! Pin posicionado aproximadamente.`);
+    dados.unshift({
+      tipo,
+      local:    end,
+      localCompleto: endExibido,
+      desc:     desc || '',
+      tempo:    'Agora',
+      urg,
+      status:   'Aberto',
+      lat:      coords.lat,
+      lng:      coords.lng,
+      cep:      coords.cep || null,
+      precisao: coords.precisao || 'fallback',
+    });
 
-  setTimeout(() => {
-    goTo('view-mapa');
+    syncTudo();
+    closeRelatar();
+
+    // Limpa campos
+    document.getElementById('tipo-select').value = '';
+    document.getElementById('end-input').value   = '';
+    document.getElementById('desc-input').value  = '';
+
+    // Feedback para o usuário com nível de precisão
+    const msgs = {
+      exata:      `✅ ${tipo} localizado com precisão no mapa!`,
+      aproximada: `📍 ${tipo} registrado — posição aproximada no mapa.`,
+      fallback:   `⚠️ Endereço não encontrado — pin posicionado em Jaboatão.`,
+    };
+    toast(msgs[coords.precisao] || msgs.fallback);
+
+    // Se o CEP foi encontrado, mostra notificação extra
+    if (coords.cep) {
+      setTimeout(() => toast(`📮 CEP identificado: ${coords.cep}`), 2600);
+    }
+
+    // Navega para o mapa e centraliza no pin
     setTimeout(() => {
-      if (mapa && mapaReady) {
-        mapa.setView([coords.lat, coords.lng], 16);
-        if (marcadores.length > 0) marcadores[0].openPopup();
-      }
-    }, 400);
-  }, 600);
-}
+      goTo('view-mapa');
+      setTimeout(() => {
+        if (mapa && mapaReady) {
+          mapa.setView([coords.lat, coords.lng], 17);
+          if (marcadores.length > 0) {
+            marcadores[0].openPopup();
+          }
+        }
+      }, 450);
+    }, 700);
 
-function atualizarContadores() {
-  const n = dados.length;
-  document.getElementById('alertCount').innerHTML     = `<span>🔔 </span>${n} Alertas`;
-  document.getElementById('mapaCount').textContent    = n;
-  document.getElementById('fullMapCount').textContent = n;
-  document.getElementById('recentesBadge').textContent= n;
+  } catch (err) {
+    console.error('[submitRelatar]', err);
+    toast('❌ Erro ao registrar ocorrência.');
+  } finally {
+    btn.innerHTML = 'Enviar Ocorrência';
+    btn.disabled  = false;
+    enviando      = false;
+  }
 }
 
 /* ============================================================
@@ -734,3 +1348,148 @@ function atualizarContadores() {
 }
 ;
 atualizarIconeTema();
+
+/* ============================================================
+   ROTA ATÉ A OCORRÊNCIA — Google Maps & Waze
+   ============================================================ */
+
+/**
+ * Abre opções de navegação para uma ocorrência
+ * @param {number} idx - índice da ocorrência em dados[]
+ */
+function abrirRota(idx) {
+  const o = dados[idx];
+  if (!o) return;
+
+  // Salva índice e abre o modal de rota
+  rotaIndex = idx;
+  const modal = document.getElementById('modal-rota');
+
+  // Preenche informações da ocorrência no modal
+  document.getElementById('rota-tipo').textContent   = o.tipo;
+  document.getElementById('rota-local').textContent  = o.local;
+  document.getElementById('rota-urg').textContent    = o.urg;
+  document.getElementById('rota-urg').style.background =
+    (BADGE_COR[o.urg] || BADGE_COR.Média).bg;
+  document.getElementById('rota-urg').style.color =
+    (BADGE_COR[o.urg] || BADGE_COR.Média).c;
+
+  // Ícone do tipo
+  document.getElementById('rota-icon-wrap').style.background =
+    (COR[o.tipo] || '#6b7280') + '22';
+  document.getElementById('rota-icon-wrap').innerHTML =
+    getIconColor(o.tipo);
+
+  modal.classList.add('open');
+}
+
+function closeRota() {
+  document.getElementById('modal-rota').classList.remove('open');
+  rotaIndex = -1;
+}
+
+let rotaIndex = -1;
+
+/**
+ * Abre Google Maps com destino nas coordenadas da ocorrência
+ */
+window.abrirGoogleMaps = function(idx) {
+  const o = dados[idx];
+  if (!o) return;
+
+  // Tenta usar localização do usuário como origem
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const origem  = `${pos.coords.latitude},${pos.coords.longitude}`;
+        const destino = `${o.lat},${o.lng}`;
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${origem}&destination=${destino}&travelmode=driving`;
+        window.open(url, '_blank');
+      },
+      () => {
+        // Sem localização: abre só o destino
+        const url = `https://www.google.com/maps/search/?api=1&query=${o.lat},${o.lng}`;
+        window.open(url, '_blank');
+        toast('📍 Abrindo destino no Google Maps');
+      }
+    );
+  } else {
+    const url = `https://www.google.com/maps/search/?api=1&query=${o.lat},${o.lng}`;
+    window.open(url, '_blank');
+  }
+
+  closeRota();
+  toast('🗺️ Abrindo Google Maps...');
+};
+
+/**
+ * Abre Waze com destino nas coordenadas da ocorrência
+ */
+window.abrirWaze = function(idx) {
+  const o = dados[idx];
+  if (!o) return;
+
+  const url = `https://waze.com/ul?ll=${o.lat},${o.lng}&navigate=yes&zoom=17`;
+  window.open(url, '_blank');
+
+  closeRota();
+  toast('🔵 Abrindo Waze...');
+};
+
+/**
+ * Abre Apple Maps (fallback para iOS)
+ */
+window.abrirAppleMaps = function(idx) {
+  const o = dados[idx];
+  if (!o) return;
+
+  const url = `http://maps.apple.com/?daddr=${o.lat},${o.lng}&dirflg=d`;
+  window.open(url, '_blank');
+
+  closeRota();
+  toast('🍎 Abrindo Apple Maps...');
+};
+
+/**
+ * Copia coordenadas para a área de transferência
+ */
+window.copiarCoordenadas = function(idx) {
+  const o = dados[idx];
+  if (!o) return;
+
+  const texto = `${o.lat}, ${o.lng}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(texto).then(() => {
+      toast('📋 Coordenadas copiadas!');
+    });
+  } else {
+    // Fallback para navegadores antigos
+    const el = document.createElement('textarea');
+    el.value = texto;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    toast('📋 Coordenadas copiadas!');
+  }
+
+  closeRota();
+};
+
+/* ── Inicia autocomplete quando o modal de relato abre ── */
+const _origOpenRelatar = openRelatar;
+// Sobrescreve openRelatar para iniciar autocomplete na 1ª abertura
+(function() {
+  let autoInit = false;
+  window.openRelatar = function() {
+    document.getElementById('modal-relatar').classList.add('open');
+    if (!autoInit) {
+      initAutocomplete();
+      autoInit = true;
+    }
+  };
+})();
+
+
+
+

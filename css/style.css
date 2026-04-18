@@ -973,3 +973,149 @@ body::after {
    KPI STRIP — adicionar no HTML após alert-count
    ============================================ */
 /* (veja bloco HTML abaixo) */
+/* ============================================
+   MODAL ROTA — Como Chegar
+   ============================================ */
+#modal-rota { z-index: 9999 !important; }
+
+/* Botão de app de navegação */
+.rota-app-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  margin-bottom: 10px;
+  text-align: left;
+  font-family: 'Sora', sans-serif;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer de hover */
+.rota-app-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: inherit;
+}
+.rota-app-btn:hover::before { opacity: 1; }
+.rota-app-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.rota-app-btn:active { transform: scale(0.97); }
+
+/* Cores de hover por app */
+.rota-google:hover { border-color: #34A853; background: #F0FBF4; }
+.rota-waze:hover   { border-color: #33CCFF; background: #F0FBFF; }
+.rota-apple:hover  { border-color: #2196F3; background: #EFF6FF; }
+.rota-copiar:hover { border-color: var(--border-strong); background: var(--surface-2); }
+
+/* Dark mode hover */
+[data-theme="dark"] .rota-google:hover { background: rgba(52,168,83,0.10); }
+[data-theme="dark"] .rota-waze:hover   { background: rgba(51,204,255,0.10); }
+[data-theme="dark"] .rota-apple:hover  { background: rgba(33,150,243,0.10); }
+[data-theme="dark"] .rota-copiar:hover { background: var(--surface-2); }
+
+/* Ícone do app */
+.rota-app-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.rota-app-icon-waze  { background: #E8F9FF; border-color: rgba(51,204,255,0.30); }
+.rota-app-icon-apple { background: #EFF6FF; border-color: rgba(33,150,243,0.20); }
+.rota-app-icon-copiar{ background: var(--surface-2); }
+
+/* Info textual */
+.rota-app-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.rota-app-nome {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+.rota-app-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Seta de navegação */
+.rota-app-arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.2s, color 0.2s;
+}
+.rota-app-btn:hover .rota-app-arrow {
+  transform: translateX(3px);
+  color: var(--brand);
+}
+
+/* Dark mode ajustes */
+[data-theme="dark"] .rota-app-icon-waze  { background: rgba(51,204,255,0.12); }
+[data-theme="dark"] .rota-app-icon-apple { background: rgba(33,150,243,0.12); }
+
+
+/* ── Spinner animação no botão ── */
+@keyframes spinIcon {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Sugestões de autocomplete ── */
+#sugestoes-lista { scrollbar-width: none; }
+#sugestoes-lista::-webkit-scrollbar { display: none; }
+
+.sugestao-item:last-child {
+  border-bottom: none !important;
+}
+
+/* ── Preview CEP ── */
+#end-preview strong {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+/* ── Spinner animação no botão ── */
+@keyframes spinIcon {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Sugestões de autocomplete ── */
+#sugestoes-lista { scrollbar-width: none; }
+#sugestoes-lista::-webkit-scrollbar { display: none; }
+
+.sugestao-item:last-child {
+  border-bottom: none !important;
+}
+
+/* ── Preview CEP ── */
+#end-preview strong {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
