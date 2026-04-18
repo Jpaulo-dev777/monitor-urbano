@@ -317,26 +317,112 @@ function toggleRecentes() {
 }
 
 /* ============================================================
-   GRÁFICO
+   GRÁFICO — lógica real: conta tipos nos dados e distribui
+   nas 7 barras proporcionalmente por ordem de contagem
    ============================================================ */
+function contarPorTipo(lista) {
+  /* Retorna ex: { Alagamento:4, Barreira:3, Lixo:3, Outros:2 } */
+  return lista.reduce((acc, o) => {
+    acc[o.tipo] = (acc[o.tipo] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function distribuirNasSemana(contagem, numDias) {
+  /*
+    Distribui as contagens reais nas barras da semana.
+    Cada tipo "preenche" dias consecutivos com sua fatia.
+    Ex: Alagamento=4 → ocupa 2 dias (2+2), Barreira=3 → 2 dias (2+1), etc.
+    Retorna array de { val, tipo } com length === numDias.
+  */
+  const dias = [];
+
+  /* Ordena tipos do maior para o menor */
+  const ordenados = Object.entries(contagem)
+    .sort((a, b) => b[1] - a[1]);
+
+  const total = ordenados.reduce((s, [, v]) => s + v, 0);
+
+  /* Divide cada contagem em até 2 barras (metade cada) */
+  const fatias = [];
+  ordenados.forEach(([tipo, qtd]) => {
+    if (qtd <= 2) {
+      fatias.push({ tipo, val: qtd });
+    } else {
+      const metA = Math.ceil(qtd / 2);
+      const metB = Math.floor(qtd / 2);
+      fatias.push({ tipo, val: metA });
+      if (metB > 0) fatias.push({ tipo, val: metB });
+    }
+  });
+
+  /* Garante exatamente numDias fatias */
+  while (fatias.length < numDias) {
+    fatias.push({ tipo: 'Outros', val: 0 });
+  }
+
+  return fatias.slice(0, numDias);
+}
+
 function renderChart() {
-  const dias = ['S','T','Q','Q','S','S','D'];
-  const vals = [2, 3, 2, 5, 4, 2, 1];
-  const mx   = 5;
-  const el   = document.getElementById('barsArea');
+  const dias   = ['S','T','Q','Q','S','S','D'];
+  const el     = document.getElementById('barsArea');
   if (!el) return;
+
+  /* 1. Conta quantos de cada tipo existem em `dados` */
+  const contagem = contarPorTipo(dados);
+
+  /* 2. Distribui nas 7 barras */
+  const fatias = distribuirNasSemana(contagem, dias.length);
+
+  /* 3. Valor máximo para escala */
+  const mx = Math.max(...fatias.map(f => f.val), 1);
+
+  /* 4. Atualiza legenda de estatísticas dinamicamente */
+  atualizarLegendaChart(contagem);
+
+  /* 5. Renderiza barras */
   el.innerHTML = dias.map((d, i) => {
-    const h = Math.round((vals[i] / mx) * 90);
+    const { val, tipo } = fatias[i];
+    const h   = val > 0 ? Math.max(Math.round((val / mx) * 90), 8) : 4;
+    const cor = COR[tipo] || '#C4B5FD';
+    const opa = val === 0 ? '0.25' : '1';
     return `
       <div class="bar-col">
-        <div class="bar${i === 3 ? ' highlight' : ''}"
-             data-val="${vals[i]}" style="height:0" data-h="${h}"></div>
+        <div class="bar"
+             data-val="${val}"
+             data-tipo="${tipo}"
+             style="height:0;background:${cor};opacity:${opa}"
+             data-h="${h}"></div>
         <span class="bar-day">${d}</span>
       </div>`;
   }).join('');
+
+  /* 6. Anima altura */
   setTimeout(() => {
-    document.querySelectorAll('.bar').forEach(b => b.style.height = b.dataset.h + 'px');
+    document.querySelectorAll('.bar').forEach(b => {
+      b.style.height = b.dataset.h + 'px';
+    });
   }, 120);
+}
+
+function atualizarLegendaChart(contagem) {
+  /*
+    Atualiza os .stat-row da legenda com os valores reais de `dados`.
+    Espera que os .stat-row estejam na ordem: Alagamento, Barreira, Lixo, Outros
+  */
+  const rows = document.querySelectorAll('.stat-row');
+  const ordem = ['Alagamento','Barreira','Lixo','Outros'];
+  rows.forEach((row, i) => {
+    const tipo = ordem[i];
+    if (!tipo) return;
+    const qtd = contagem[tipo] || 0;
+    /* Mantém o dot e troca só o texto */
+    const dot = row.querySelector('.stat-dot');
+    row.innerHTML = '';
+    if (dot) row.appendChild(dot);
+    row.appendChild(document.createTextNode(` ${qtd} ${tipo}${qtd !== 1 ? 's' : ''}`));
+  });
 }
 
 /* ============================================================
@@ -391,6 +477,7 @@ async function submitRelatar() {
   atualizarContadores();
   renderLista(dados, 'listaHome');
   renderLista(dados, 'listaTodas');
+  renderChart(); /* ← regera o gráfico com os novos dados */
   if (mapaReady)     { renderMarcadores(dados);     renderMiniLista(dados); }
   if (mapaFullReady) { renderMarcadoresFull(dados); }
 
@@ -402,7 +489,9 @@ async function submitRelatar() {
   btn.disabled    = false;
   enviando        = false;
 
-  const msg = coords.encontrado ? `✅ ${tipo} marcado no mapa!` : `✅ Registrado! Pin posicionado aproximadamente.`;
+  const msg = coords.encontrado
+    ? `✅ ${tipo} marcado no mapa!`
+    : `✅ Registrado! Pin posicionado aproximadamente.`;
   toast(msg);
 
   setTimeout(() => {
@@ -418,9 +507,9 @@ async function submitRelatar() {
 
 function atualizarContadores() {
   const n = dados.length;
-  document.getElementById('alertCount').innerHTML     = `<span>🔔 </span>${n} Alertas`;
-  document.getElementById('mapaCount').textContent    = n;
-  document.getElementById('fullMapCount').textContent = n;
+  document.getElementById('alertCount').innerHTML      = `<span>🔔 </span>${n} Alertas`;
+  document.getElementById('mapaCount').textContent     = n;
+  document.getElementById('fullMapCount').textContent  = n;
   document.getElementById('recentesBadge').textContent = n;
 }
 
