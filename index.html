@@ -8,30 +8,21 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="css/style.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <style>
   body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
+    margin: 0; padding: 0; min-height: 100vh;
     background-image: url('./images/defesacivil.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-size: cover; background-position: center;
+    background-repeat: no-repeat; background-attachment: fixed;
   }
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
+    content: ''; position: fixed; inset: 0;
     background: linear-gradient(135deg,rgba(26,26,46,0.72) 0%,rgba(123,47,190,0.55) 100%);
-    z-index: 0;
-    pointer-events: none;
+    z-index: 0; pointer-events: none;
   }
   .phone { position: relative; z-index: 1; }
 </style>
 </head>
-
 <body>
 <div class="phone" id="phone">
   <div class="toast" id="toast"></div>
@@ -53,7 +44,8 @@
   <!-- ===== VIEW HOME ===== -->
   <div class="scroll-area" id="view-home">
     <div class="header">
-      <img src="./images/81d2de84-5db6-4410-8335-f79c745968e2.png" alt="Prefeitura de Jaboatão dos Guararapes" class="logo-prefeitura"/>
+      <img src="./images/81d2de84-5db6-4410-8335-f79c745968e2.png"
+           alt="Prefeitura de Jaboatão dos Guararapes" class="logo-prefeitura"/>
       <div class="dots-icon">
         <span></span><span></span><span></span>
         <span></span><span></span><span></span>
@@ -98,7 +90,6 @@
         </div>
         <span class="service-label">Alagamento</span>
       </div>
-
       <div class="service-item" onclick="filtrarMapa('Barreira')">
         <div class="service-icon si-red">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -110,7 +101,6 @@
         </div>
         <span class="service-label">Barreira</span>
       </div>
-
       <div class="service-item" onclick="filtrarMapa('Lixo')">
         <div class="service-icon si-yellow">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -120,7 +110,6 @@
         </div>
         <span class="service-label">Lixo</span>
       </div>
-
       <div class="service-item" onclick="openRelatar()">
         <div class="service-icon si-purple">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -130,7 +119,6 @@
         </div>
         <span class="service-label">Relatar</span>
       </div>
-
       <div class="service-item" onclick="toast('Câmera em breve!')">
         <div class="service-icon si-dark">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -140,7 +128,6 @@
         </div>
         <span class="service-label">Foto</span>
       </div>
-
       <div class="service-item" onclick="goTo('view-lista')">
         <div class="service-icon si-purple">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -152,7 +139,6 @@
         </div>
         <span class="service-label">Relatório</span>
       </div>
-
       <div class="service-item" onclick="openContato()">
         <div class="service-icon si-green">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -161,7 +147,6 @@
         </div>
         <span class="service-label">Contato</span>
       </div>
-
       <div class="service-item" onclick="openConfig()">
         <div class="service-icon si-gray">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -171,14 +156,12 @@
         </div>
         <span class="service-label">Config.</span>
       </div>
-
       <div class="service-item" onclick="openVistoria()">
         <div class="service-icon si-orange">
           <img src="images/sem fundo icone balança.png" alt="Vistoria" class="service-icon-img"/>
         </div>
         <span class="service-label">Vistoria</span>
       </div>
-
       <div class="service-item" onclick="filtrarMapa('Buraco')">
         <div class="service-icon si-brown">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -189,7 +172,6 @@
         </div>
         <span class="service-label">Buraco</span>
       </div>
-
       <div class="service-item" onclick="filtrarMapa('Iluminação')">
         <div class="service-icon si-yellow2">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -204,7 +186,6 @@
         </div>
         <span class="service-label">Iluminação</span>
       </div>
-
       <div class="service-item" onclick="goTo('view-mapa')">
         <div class="service-icon si-teal">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -219,7 +200,8 @@
       <span class="section-title">Recentes</span>
       <div class="dropdown-arrow-wrap">
         <span class="recentes-count-badge" id="recentesBadge">12</span>
-        <svg class="dropdown-arrow" id="recentesArrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg class="dropdown-arrow" id="recentesArrow" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="6 9 12 15 18 9"/>
         </svg>
       </div>
@@ -227,7 +209,8 @@
     <div class="ocorrencias recentes-lista" id="listaHome" style="display:none;"></div>
 
     <button class="action-btn btn-relatar btn-full" onclick="goTo('view-mapa')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           style="width:20px;height:20px;">
         <polygon points="3 11 22 2 13 21 11 13 3 11"/>
       </svg>
       Ver Alertas no Mapa
@@ -238,7 +221,8 @@
   <div class="scroll-area" id="view-lista" style="display:none;">
     <div class="header">
       <button class="btn-back" onclick="goTo('view-home')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
           <polyline points="15 18 9 12 15 6"/>
         </svg> Voltar
       </button>
@@ -252,12 +236,14 @@
   <div class="scroll-area alerta-view" id="view-mapa" style="display:none;">
     <div class="alerta-header">
       <button class="btn-back" onclick="goTo('view-home')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
           <polyline points="15 18 9 12 15 6"/>
         </svg>Início
       </button>
       <div class="alerta-title">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="var(--purple)" stroke-width="2">
           <polygon points="3 11 22 2 13 21 11 13 3 11"/>
         </svg>
         Alerta Monitor
@@ -265,42 +251,53 @@
       </div>
       <div style="width:48px"></div>
     </div>
-
     <div class="alerta-info">
       <span>Jaboatão dos Guararapes · PE</span>
       <span><span class="live-dot"></span>Ao vivo</span>
     </div>
-
     <div class="search-bar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input type="text" placeholder="Buscar ocorrência ou endereço..." oninput="buscarMapa(this.value)">
+      <input type="text" placeholder="Buscar ocorrência ou endereço..."
+             oninput="buscarMapa(this.value)">
     </div>
-
     <div class="chips" id="chips">
       <button class="chip on" data-t="Todos" onclick="filtrarMapa('Todos')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Todos
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+        </svg>Todos
       </button>
       <button class="chip off" data-t="Alagamento" onclick="filtrarMapa('Alagamento')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/><path d="M2 14c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/></svg>Alagamento
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 20c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/>
+          <path d="M2 14c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/>
+        </svg>Alagamento
       </button>
       <button class="chip off" data-t="Barreira" onclick="filtrarMapa('Barreira')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="9" width="20" height="6" rx="2"/><line x1="7" y1="9" x2="7" y2="15"/></svg>Barreira
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="9" width="20" height="6" rx="2"/>
+          <line x1="7" y1="9" x2="7" y2="15"/>
+        </svg>Barreira
       </button>
       <button class="chip off" data-t="Lixo" onclick="filtrarMapa('Lixo')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Lixo
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        </svg>Lixo
       </button>
       <button class="chip off" data-t="Outros" onclick="filtrarMapa('Outros')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>Outros
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+        </svg>Outros
       </button>
     </div>
-
-    <!-- map-wrap com botão expandir -->
     <div class="map-wrap">
       <div id="leafletMap"></div>
       <button class="btn-expand-map" onclick="goTo('view-mapa-full')" title="Expandir mapa">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             width="18" height="18">
           <polyline points="15 3 21 3 21 9"/>
           <polyline points="9 21 3 21 3 15"/>
           <line x1="21" y1="3" x2="14" y2="10"/>
@@ -308,21 +305,21 @@
         </svg>
       </button>
     </div>
-
     <button class="btn-localizacao" onclick="centralizarUsuario()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
       </svg>
       Minha Localização
     </button>
-
     <div class="mini-card">
       <div class="mini-card-title">Ocorrências no mapa</div>
       <div class="mini-list" id="miniLista"></div>
     </div>
-
     <button class="action-btn btn-relatar btn-full" onclick="openRelatar()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+           style="width:18px;height:18px;">
         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
         <line x1="12" y1="9" x2="12" y2="13"/>
       </svg>
@@ -334,18 +331,17 @@
   <div class="scroll-area alerta-view" id="view-mapa-full" style="display:none;">
     <div class="fullmap-topbar">
       <button class="fullmap-back" onclick="goTo('view-mapa')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
         Voltar
       </button>
       <span class="fullmap-title">
-        <span class="live-dot"></span>
-        Monitor Urbano
+        <span class="live-dot"></span>Monitor Urbano
       </span>
       <span class="alerta-count-badge" id="fullMapCount">12</span>
     </div>
-
     <div class="chips fullmap-chips" id="chips-full">
       <button class="chip on"  data-t="Todos"      onclick="filtrarMapaFull('Todos')">Todos</button>
       <button class="chip off" data-t="Alagamento" onclick="filtrarMapaFull('Alagamento')">🌊 Alagamento</button>
@@ -353,16 +349,18 @@
       <button class="chip off" data-t="Lixo"       onclick="filtrarMapaFull('Lixo')">🗑️ Lixo</button>
       <button class="chip off" data-t="Outros"     onclick="filtrarMapaFull('Outros')">⚠️ Outros</button>
     </div>
-
     <div class="fullmap-wrap">
       <div id="leafletMapFull"></div>
       <button class="fullmap-locate-btn" onclick="centralizarUsuarioFull()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
         </svg>
       </button>
       <button class="fullmap-collapse-btn" onclick="goTo('view-mapa')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             width="16" height="16">
           <polyline points="4 14 10 14 10 20"/>
           <polyline points="20 10 14 10 14 4"/>
           <line x1="10" y1="14" x2="3" y2="21"/>
@@ -389,7 +387,8 @@
     </div>
     <button class="nav-fab" onclick="openRelatar()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
     </button>
     <div class="nav-item" id="nav-bell" onclick="goTo('view-lista')">
@@ -406,7 +405,8 @@
   </div>
 
   <!-- ===== MODAL RELATAR ===== -->
-  <div class="modal-overlay" id="modal-relatar" onclick="if(event.target===this)closeRelatar()">
+  <div class="modal-overlay" id="modal-relatar"
+       onclick="if(event.target===this)closeRelatar()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
       <div class="modal-title">Registrar Ocorrência</div>
@@ -421,11 +421,13 @@
         </div>
         <div class="form-group">
           <label class="form-label">ENDEREÇO</label>
-          <input class="form-input" type="text" id="end-input" placeholder="Ex: Av. Principal, 100">
+          <input class="form-input" type="text" id="end-input"
+                 placeholder="Ex: Av. Principal, 100">
         </div>
         <div class="form-group">
           <label class="form-label">DESCRIÇÃO</label>
-          <textarea class="form-textarea" id="desc-input" placeholder="Descreva a ocorrência..."></textarea>
+          <textarea class="form-textarea" id="desc-input"
+                    placeholder="Descreva a ocorrência..."></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">URGÊNCIA</label>
@@ -439,11 +441,14 @@
   </div>
 
   <!-- ===== MODAL CONTATO ===== -->
-  <div class="modal-overlay" id="modal-contato" onclick="if(event.target===this)closeContato()">
+  <div class="modal-overlay" id="modal-contato"
+       onclick="if(event.target===this)closeContato()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
       <div class="modal-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="#dc2626" stroke-width="2"
+             style="vertical-align:middle;margin-right:6px;">
           <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
         </svg>
         Contatos de Emergência
@@ -461,7 +466,8 @@
             <span class="contato-num">199</span>
           </div>
           <div class="contato-call">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" width="18" height="18">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
             </svg>
           </div>
@@ -478,7 +484,8 @@
             <span class="contato-num">193</span>
           </div>
           <div class="contato-call">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" width="18" height="18">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
             </svg>
           </div>
@@ -494,7 +501,8 @@
             <span class="contato-num">190</span>
           </div>
           <div class="contato-call">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" width="18" height="18">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
             </svg>
           </div>
@@ -512,7 +520,8 @@
             <span class="contato-num">192</span>
           </div>
           <div class="contato-call">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" width="18" height="18">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
             </svg>
           </div>
@@ -523,11 +532,14 @@
   </div>
 
   <!-- ===== MODAL CONFIG ===== -->
-  <div class="modal-overlay" id="modal-config" onclick="if(event.target===this)closeConfig()">
+  <div class="modal-overlay" id="modal-config"
+       onclick="if(event.target===this)closeConfig()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
       <div class="modal-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="var(--purple)" stroke-width="2"
+             style="vertical-align:middle;margin-right:6px;">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
@@ -555,7 +567,8 @@
         <div class="config-row">
           <div class="config-row-left">
             <div class="config-icon-wrap ci-purple">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white"
+                   stroke-width="2" width="18" height="18">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
@@ -572,7 +585,8 @@
         <div class="config-row">
           <div class="config-row-left">
             <div class="config-icon-wrap ci-red">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white"
+                   stroke-width="2" width="18" height="18">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="12" y1="8" x2="12" y2="12"/>
                 <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -594,7 +608,8 @@
         <div class="config-row">
           <div class="config-row-left">
             <div class="config-icon-wrap ci-teal">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white"
+                   stroke-width="2" width="18" height="18">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
               </svg>
@@ -614,11 +629,14 @@
   </div>
 
   <!-- ===== MODAL VISTORIA ===== -->
-  <div class="modal-overlay" id="modal-vistoria" onclick="if(event.target===this)closeVistoria()">
+  <div class="modal-overlay" id="modal-vistoria"
+       onclick="if(event.target===this)closeVistoria()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
       <div class="modal-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="#ea580c" stroke-width="2"
+             style="vertical-align:middle;margin-right:6px;">
           <path d="M9 11l3 3L22 4"/>
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
         </svg>
@@ -640,11 +658,13 @@
         </div>
         <div class="form-group">
           <label class="form-label">ENDEREÇO</label>
-          <input class="form-input" type="text" id="vistoria-end" placeholder="Ex: Rua das Flores, 200">
+          <input class="form-input" type="text" id="vistoria-end"
+                 placeholder="Ex: Rua das Flores, 200">
         </div>
         <div class="form-group">
           <label class="form-label">DESCRIÇÃO DO PROBLEMA</label>
-          <textarea class="form-textarea" id="vistoria-desc" placeholder="Descreva o que precisa ser vistoriado..."></textarea>
+          <textarea class="form-textarea" id="vistoria-desc"
+                    placeholder="Descreva o que precisa ser vistoriado..."></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">URGÊNCIA</label>
@@ -652,48 +672,105 @@
             <option>Alta</option><option>Média</option><option>Baixa</option>
           </select>
         </div>
-        <button class="btn-submit" style="background:linear-gradient(135deg,#ea580c,#f97316);" onclick="submitVistoria()">
+        <button class="btn-submit"
+                style="background:linear-gradient(135deg,#ea580c,#f97316);"
+                onclick="submitVistoria()">
           Solicitar Vistoria
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ===== MODAL EDITAR ===== -->
-  <div class="modal-overlay" id="modal-editar" onclick="if(event.target===this)closeEditar()">
+  <!-- ===== MODAL EDITAR (CRUD) ===== -->
+  <div class="modal-overlay" id="modal-editar"
+       onclick="if(event.target===this)closeEditar()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
       <div class="modal-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="var(--purple)" stroke-width="2"
+             style="vertical-align:middle;margin-right:6px;">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
         </svg>
         Editar Ocorrência
       </div>
+      <div id="edit-info-badge" style="
+        background:var(--purple-pale);border-radius:10px;padding:8px 12px;
+        margin-bottom:14px;font-size:11px;color:var(--purple);font-weight:600;
+        display:flex;align-items:center;gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span id="edit-info-text">Editando ocorrência</span>
+      </div>
       <div class="modal-form">
         <div class="form-group">
           <label class="form-label">TIPO DE OCORRÊNCIA</label>
           <select class="form-select" id="edit-tipo">
-            <option>Alagamento</option><option>Barreira</option><option>Lixo</option>
-            <option>Buraco</option><option>Iluminação</option><option>Outros</option>
+            <option value="Alagamento">Alagamento</option>
+            <option value="Barreira">Barreira</option>
+            <option value="Lixo">Lixo</option>
+            <option value="Buraco">Buraco</option>
+            <option value="Iluminação">Iluminação</option>
+            <option value="Outros">Outros</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">ENDEREÇO</label>
-          <input class="form-input" type="text" id="edit-end" placeholder="Ex: Av. Principal, 100">
+          <input class="form-input" type="text" id="edit-end"
+                 placeholder="Ex: Av. Principal, 100">
         </div>
         <div class="form-group">
           <label class="form-label">DESCRIÇÃO</label>
-          <textarea class="form-textarea" id="edit-desc" placeholder="Descreva a ocorrência..."></textarea>
+          <textarea class="form-textarea" id="edit-desc"
+                    placeholder="Descreva a ocorrência..."></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">URGÊNCIA</label>
           <select class="form-select" id="edit-urg">
-            <option>Alta</option><option>Média</option><option>Baixa</option>
+            <option value="Alta">Alta</option>
+            <option value="Média">Média</option>
+            <option value="Baixa">Baixa</option>
           </select>
         </div>
-        <button class="btn-submit" onclick="salvarEdicao()">Salvar Alterações</button>
+        <div class="form-group">
+          <label class="form-label">STATUS</label>
+          <select class="form-select" id="edit-status">
+            <option value="Aberto">Aberto</option>
+            <option value="Em atendimento">Em atendimento</option>
+            <option value="Resolvido">Resolvido</option>
+          </select>
+        </div>
+        <button class="btn-submit" onclick="salvarEdicao()">
+          ✔ Salvar Alterações
+        </button>
         <button class="btn-fechar" onclick="closeEditar()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONFIRM DELETE ===== -->
+  <div class="confirm-overlay" id="confirm-delete">
+    <div class="confirm-box">
+      <div class="confirm-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </div>
+      <div class="confirm-title">Remover ocorrência?</div>
+      <div class="confirm-sub" id="confirm-sub-text">
+        Esta ação removerá o marcador do mapa e da lista.
+      </div>
+      <div class="confirm-btns">
+        <button class="confirm-cancel" onclick="closeConfirmDelete()">Cancelar</button>
+        <button class="confirm-delete-btn" onclick="confirmarDelete()">🗑️ Remover</button>
       </div>
     </div>
   </div>
