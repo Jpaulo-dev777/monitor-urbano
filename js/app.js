@@ -1571,7 +1571,7 @@ const _origOpenRelatar = openRelatar;
    ASSISTENTE IA — Gemini 2.0 Flash (correção do erro 400)
    ============================================================ */
 
-const GEMINI_API_KEY = 'AIzaSyCiLgusko8YBq7nbk5C3k18kCLw3alxnZU';
+const GEMINI_API_KEY = 'AIzaSyBJRU7QlfWmPx-Cy06k0PiJ1T2f0sa5z40';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 const SYSTEM_PROMPT = `Você é o Assistente de Monitoramento Urbano de Jaboatão dos Guararapes - PE, Brasil.
@@ -1874,6 +1874,50 @@ async function testarConexaoGemini() {
 
 document.addEventListener('DOMContentLoaded', testarConexaoGemini);
 
+async function enviarPergunta(prompt) {
+  const response = await fetch("/.netlify/functions/gemini", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prompt }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error(data);
+    alert(data.error || "Erro ao consultar a API");
+    return;
+  }
+
+  console.log(data.text);
+  return data.text;
+}
+
+document.getElementById("enviar").addEventListener("click", async () => {
+  const prompt = document.getElementById("prompt").value;
+  const respostaDiv = document.getElementById("resposta");
+
+  respostaDiv.innerText = "Carregando...";
+
+  const response = await fetch("/.netlify/functions/gemini", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prompt }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    respostaDiv.innerText = data.error || "Erro";
+    return;
+  }
+
+  respostaDiv.innerText = data.text;
+});
 
 
 
