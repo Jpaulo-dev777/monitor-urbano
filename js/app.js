@@ -1394,47 +1394,72 @@ let rotaIndex = -1;
  * Abre Google Maps com destino nas coordenadas da ocorrência
  */
 window.abrirGoogleMaps = function(idx) {
-  const o = dados[idx];
+  const o = dados[idx ?? rotaIndex];
   if (!o) return;
 
-  // Tenta usar localização do usuário como origem
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const origem  = `${pos.coords.latitude},${pos.coords.longitude}`;
-        const destino = `${o.lat},${o.lng}`;
-        const url = `https://www.google.com/maps/dir/?api=1&origin=${origem}&destination=${destino}&travelmode=driving`;
-        window.open(url, '_blank');
-      },
-      () => {
-        // Sem localização: abre só o destino
-        const url = `https://www.google.com/maps/search/?api=1&query=${o.lat},${o.lng}`;
-        window.open(url, '_blank');
-        toast('📍 Abrindo destino no Google Maps');
-      }
-    );
-  } else {
-    const url = `https://www.google.com/maps/search/?api=1&query=${o.lat},${o.lng}`;
+  const destino = `${o.lat},${o.lng}`;
+
+  const abrirSoDestino = () => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destino}&travelmode=driving`;
     window.open(url, '_blank');
+    closeRota();
+    toast('🗺️ Defina a origem no Google Maps.');
+  };
+
+  if (!navigator.geolocation) {
+    abrirSoDestino();
+    return;
   }
 
-  closeRota();
-  toast('🗺️ Abrindo Google Maps...');
+  toast('📡 Obtendo sua localização...');
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const origem = `${pos.coords.latitude},${pos.coords.longitude}`;
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${origem}&destination=${destino}&travelmode=driving`;
+      window.open(url, '_blank');
+      closeRota();
+      toast('🗺️ Rota traçada com sua localização atual!');
+    },
+    () => abrirSoDestino(),
+    { timeout: 8000, maximumAge: 30000, enableHighAccuracy: true }
+  );
 };
 
-/**
- * Abre Waze com destino nas coordenadas da ocorrência
- */
+
 window.abrirWaze = function(idx) {
-  const o = dados[idx];
+  const o = dados[idx ?? rotaIndex];
   if (!o) return;
 
-  const url = `https://waze.com/ul?ll=${o.lat},${o.lng}&navigate=yes&zoom=17`;
-  window.open(url, '_blank');
+  const destino = `${o.lat},${o.lng}`;
 
-  closeRota();
-  toast('🔵 Abrindo Waze...');
+  const abrirSemOrigem = () => {
+    const url = `https://waze.com/ul?ll=${destino}&navigate=yes&zoom=17`;
+    window.open(url, '_blank');
+    closeRota();
+    toast('🔵 Abrindo Waze...');
+  };
+
+  if (!navigator.geolocation) {
+    abrirSemOrigem();
+    return;
+  }
+
+  toast('📡 Obtendo sua localização...');
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const origem = `${pos.coords.latitude},${pos.coords.longitude}`;
+      const url = `https://waze.com/ul?ll=${destino}&navigate=yes&zoom=17&from=ll.${origem}`;
+      window.open(url, '_blank');
+      closeRota();
+      toast('🔵 Rota traçada no Waze com sua localização!');
+    },
+    () => abrirSemOrigem(),
+    { timeout: 8000, maximumAge: 30000, enableHighAccuracy: true }
+  );
 };
+
 
 /**
  * Abre Apple Maps (fallback para iOS)
