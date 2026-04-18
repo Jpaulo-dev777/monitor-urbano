@@ -614,3 +614,24 @@ renderLista(dados, 'listaTodas');
 renderChart();
 atualizarContadores();
 atualizarIconeTema();
+
+async function solicitarPermissaoNotificacao() {
+  if (!('Notification' in window)) return;
+  
+  const permissao = await Notification.requestPermission();
+  if (permissao === 'granted') {
+    toast('✅ Notificações ativadas!');
+  }
+}
+
+function notificarNovaOcorrencia(ocorrencia) {
+  if (Notification.permission !== 'granted') return;
+  
+  new Notification(`⚠️ Nova ocorrência: ${ocorrencia.tipo}`, {
+    body: `📍 ${ocorrencia.local}\n🚨 Urgência: ${ocorrencia.urg}`,
+    icon: './images/icon-192.png',
+    badge: './images/badge-72.png',
+    tag: `ocorrencia-${Date.now()}`,
+    requireInteraction: ocorrencia.urg === 'Alta', // não fecha sozinha se urgente
+  });
+}
