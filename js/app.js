@@ -1,5 +1,5 @@
 /* ============================================================
-   MONITOR URBANO — app.js
+   MONITOR URBANO — app.js  (completo)
    ============================================================ */
 
 /* ── Dados ── */
@@ -29,24 +29,22 @@ const BADGE_COR = {
   Baixa: { bg:'#dcfce7', c:'#16a34a' }
 };
 
-/* ── SVG Icons (branco — marcadores mapa) ── */
 const SVG_ICON = {
-  Alagamento: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M2 20c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/><path d="M2 14c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/></svg>`,
-  Barreira:   `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="2" y="9" width="20" height="6" rx="2"/><line x1="7" y1="9" x2="7" y2="15"/><line x1="12" y1="9" x2="12" y2="15"/></svg>`,
-  Lixo:       `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
-  Outros:     `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-  Buraco:     `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><ellipse cx="12" cy="16" rx="8" ry="4"/><path d="M4 12c0-2.2 3.6-4 8-4s8 1.8 8 4"/></svg>`,
-  Iluminação: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="2" x2="12" y2="6"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="18" x2="12" y2="22"/></svg>`,
+  Alagamento:`<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M2 20c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/><path d="M2 14c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/></svg>`,
+  Barreira:  `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="2" y="9" width="20" height="6" rx="2"/><line x1="7" y1="9" x2="7" y2="15"/><line x1="12" y1="9" x2="12" y2="15"/></svg>`,
+  Lixo:      `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
+  Outros:    `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  Buraco:    `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><ellipse cx="12" cy="16" rx="8" ry="4"/><path d="M4 12c0-2.2 3.6-4 8-4s8 1.8 8 4"/></svg>`,
+  Iluminação:`<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="2" x2="12" y2="6"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="18" x2="12" y2="22"/></svg>`,
 };
 
-/* ── SVG Icons (colorido — listas) ── */
 const SVG_ICON_COLOR = {
-  Alagamento: (c) => `<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><path d="M2 20c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/><path d="M2 14c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/></svg>`,
-  Barreira:   (c) => `<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><rect x="2" y="9" width="20" height="6" rx="2"/><line x1="7" y1="9" x2="7" y2="15"/><line x1="12" y1="9" x2="12" y2="15"/></svg>`,
-  Lixo:       (c) => `<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
-  Outros:     (c) => `<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-  Buraco:     (c) => `<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><ellipse cx="12" cy="16" rx="8" ry="4"/><path d="M4 12c0-2.2 3.6-4 8-4s8 1.8 8 4"/></svg>`,
-  Iluminação: (c) => `<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="18" x2="12" y2="22"/></svg>`,
+  Alagamento:(c)=>`<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><path d="M2 20c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/><path d="M2 14c2-2 4 0 6 0s4-2 6 0 4 2 6 0"/></svg>`,
+  Barreira:  (c)=>`<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><rect x="2" y="9" width="20" height="6" rx="2"/><line x1="7" y1="9" x2="7" y2="15"/><line x1="12" y1="9" x2="12" y2="15"/></svg>`,
+  Lixo:      (c)=>`<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
+  Outros:    (c)=>`<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  Buraco:    (c)=>`<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><ellipse cx="12" cy="16" rx="8" ry="4"/><path d="M4 12c0-2.2 3.6-4 8-4s8 1.8 8 4"/></svg>`,
+  Iluminação:(c)=>`<svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="18" x2="12" y2="22"/></svg>`,
 };
 
 function getIconColor(tipo) {
@@ -55,7 +53,7 @@ function getIconColor(tipo) {
 }
 
 /* ============================================================
-   LEAFLET MAP
+   LEAFLET — MAPA NORMAL
    ============================================================ */
 let mapa       = null;
 let marcadores = [];
@@ -66,10 +64,10 @@ function criarIcone(tipo) {
   const cor = COR[tipo] || '#6b7280';
   const svg = SVG_ICON[tipo] || SVG_ICON.Outros;
   return L.divIcon({
-    className:    '',
-    iconSize:     [40, 48],
-    iconAnchor:   [20, 48],
-    popupAnchor:  [0, -50],
+    className: '',
+    iconSize:    [40, 48],
+    iconAnchor:  [20, 48],
+    popupAnchor: [0, -50],
     html: `
       <div style="
         width:40px;height:40px;
@@ -78,32 +76,27 @@ function criarIcone(tipo) {
         transform:rotate(-45deg);
         display:flex;align-items:center;justify-content:center;
         box-shadow:0 4px 14px rgba(0,0,0,0.28);
-        border:3px solid white;
-      ">
+        border:3px solid white;">
         <div style="transform:rotate(45deg);width:20px;height:20px;">${svg}</div>
       </div>`
   });
 }
 
 function iniciarMapa() {
-  if (mapaReady) {
-    setTimeout(() => mapa && mapa.invalidateSize(true), 80);
-    return;
+  if (!mapaReady) {
+    mapa = L.map('leafletMap', {
+      center: [-8.1128, -34.9092], zoom: 14,
+      zoomControl: false, attributionControl: true
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(mapa);
+    L.control.zoom({ position: 'bottomright' }).addTo(mapa);
+    mapaReady = true;
+    renderMarcadores(dados);
+    renderMiniLista(dados);
   }
-  mapa = L.map('leafletMap', {
-    center: [-8.1128, -34.9092],
-    zoom: 14,
-    zoomControl: false,
-    attributionControl: true
-  });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap', maxZoom: 19
-  }).addTo(mapa);
-  L.control.zoom({ position: 'bottomright' }).addTo(mapa);
-  mapaReady = true;
-  renderMarcadores(dados);
-  renderMiniLista(dados);
-  setTimeout(() => mapa.invalidateSize(true), 250);
+  requestAnimationFrame(() => setTimeout(() => mapa && mapa.invalidateSize(true), 200));
 }
 
 function renderMarcadores(lista) {
@@ -117,9 +110,11 @@ function renderMarcadores(lista) {
         <div style="font-family:'Sora',sans-serif;min-width:180px;">
           <b style="font-size:13px;color:#1a1a2e;">${o.tipo}</b><br>
           <span style="font-size:11px;color:#8B7CA8;">${o.local}</span><br>
+          ${o.desc ? `<span style="font-size:11px;color:#555;display:block;margin-top:4px;">${o.desc}</span>` : ''}
           <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:10px;color:#8B7CA8;">${o.tempo}</span>
-            <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:${b.bg};color:${b.c};">${o.urg}</span>
+            <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;
+              background:${b.bg};color:${b.c};">${o.urg}</span>
           </div>
         </div>`, { maxWidth: 220 })
       .addTo(mapa);
@@ -145,9 +140,9 @@ function renderMiniLista(lista) {
   }).join('');
 }
 
-/* ── Filtros ── */
+/* ── Filtros mapa normal ── */
 function filtrarMapa(tipo) {
-  document.querySelectorAll('.chip').forEach(c => {
+  document.querySelectorAll('#chips .chip').forEach(c => {
     c.className = 'chip ' + (c.dataset.t === tipo ? 'on' : 'off');
   });
   const lista = tipo === 'Todos' ? dados : dados.filter(o => o.tipo === tipo);
@@ -166,7 +161,6 @@ function buscarMapa(val) {
   document.getElementById('mapaCount').textContent = lista.length;
 }
 
-/* ── Localização ── */
 function centralizarUsuario() {
   if (!navigator.geolocation) { toast('GPS não disponível'); return; }
   toast('Localizando...');
@@ -175,11 +169,80 @@ function centralizarUsuario() {
     mapa.setView([lat, lng], 15);
     if (userMarker) mapa.removeLayer(userMarker);
     userMarker = L.circleMarker([lat, lng], {
-      radius: 10, color: '#7B2FBE',
-      fillColor: '#A855F7', fillOpacity: 0.9, weight: 3
-    })
-    .bindPopup('<b style="font-family:Sora,sans-serif;font-size:12px;">Você está aqui</b>')
-    .addTo(mapa).openPopup();
+      radius: 10, color: '#7B2FBE', fillColor: '#A855F7', fillOpacity: 0.9, weight: 3
+    }).bindPopup('<b style="font-family:Sora,sans-serif;font-size:12px;">Você está aqui</b>')
+      .addTo(mapa).openPopup();
+    toast('Localização encontrada! 📍');
+  }, () => toast('Não foi possível obter localização'));
+}
+
+/* ============================================================
+   LEAFLET — MAPA FULLSCREEN
+   ============================================================ */
+let mapaFull       = null;
+let marcadoresFull = [];
+let userMarkerFull = null;
+let mapaFullReady  = false;
+
+function iniciarMapaFull() {
+  if (!mapaFullReady) {
+    mapaFull = L.map('leafletMapFull', {
+      center: [-8.1128, -34.9092], zoom: 14,
+      zoomControl: false, attributionControl: true
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(mapaFull);
+    L.control.zoom({ position: 'bottomright' }).addTo(mapaFull);
+    mapaFullReady = true;
+    renderMarcadoresFull(dados);
+  }
+  requestAnimationFrame(() => setTimeout(() => mapaFull && mapaFull.invalidateSize(true), 200));
+}
+
+function renderMarcadoresFull(lista) {
+  if (!mapaFull) return;
+  marcadoresFull.forEach(m => mapaFull.removeLayer(m));
+  marcadoresFull = [];
+  lista.forEach(o => {
+    const b = BADGE_COR[o.urg] || BADGE_COR.Média;
+    const m = L.marker([o.lat, o.lng], { icon: criarIcone(o.tipo) })
+      .bindPopup(`
+        <div style="font-family:'Sora',sans-serif;min-width:180px;">
+          <b style="font-size:13px;color:#1a1a2e;">${o.tipo}</b><br>
+          <span style="font-size:11px;color:#8B7CA8;">${o.local}</span><br>
+          ${o.desc ? `<span style="font-size:11px;color:#555;display:block;margin-top:4px;">${o.desc}</span>` : ''}
+          <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:10px;color:#8B7CA8;">${o.tempo}</span>
+            <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;
+              background:${b.bg};color:${b.c};">${o.urg}</span>
+          </div>
+        </div>`, { maxWidth: 220 })
+      .addTo(mapaFull);
+    marcadoresFull.push(m);
+  });
+}
+
+function filtrarMapaFull(tipo) {
+  document.querySelectorAll('#chips-full .chip').forEach(c => {
+    c.className = 'chip ' + (c.dataset.t === tipo ? 'on' : 'off');
+  });
+  const lista = tipo === 'Todos' ? dados : dados.filter(o => o.tipo === tipo);
+  renderMarcadoresFull(lista);
+  document.getElementById('fullMapCount').textContent = lista.length;
+}
+
+function centralizarUsuarioFull() {
+  if (!navigator.geolocation) { toast('GPS não disponível'); return; }
+  toast('Localizando...');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude: lat, longitude: lng } = pos.coords;
+    mapaFull.setView([lat, lng], 15);
+    if (userMarkerFull) mapaFull.removeLayer(userMarkerFull);
+    userMarkerFull = L.circleMarker([lat, lng], {
+      radius: 10, color: '#7B2FBE', fillColor: '#A855F7', fillOpacity: 0.9, weight: 3
+    }).bindPopup('<b style="font-family:Sora,sans-serif;font-size:12px;">Você está aqui</b>')
+      .addTo(mapaFull).openPopup();
     toast('Localização encontrada! 📍');
   }, () => toast('Não foi possível obter localização'));
 }
@@ -187,8 +250,13 @@ function centralizarUsuario() {
 /* ============================================================
    NAVEGAÇÃO
    ============================================================ */
-const VIEWS   = ['view-home', 'view-lista', 'view-mapa'];
-const NAV_IDS = { 'view-home':'nav-home', 'view-lista':'nav-bell', 'view-mapa':'nav-map' };
+const VIEWS   = ['view-home', 'view-lista', 'view-mapa', 'view-mapa-full'];
+const NAV_IDS = {
+  'view-home':     'nav-home',
+  'view-lista':    'nav-bell',
+  'view-mapa':     'nav-map',
+  'view-mapa-full':'nav-map'
+};
 
 function goTo(id) {
   VIEWS.forEach(v => {
@@ -201,11 +269,14 @@ function goTo(id) {
   const target = document.getElementById(id);
   if (!target) return;
 
-  if (id === 'view-mapa') {
-    target.classList.add('open');
+  if (id === 'view-mapa' || id === 'view-mapa-full') {
     target.style.display = '';
-    setTimeout(iniciarMapa, 80);
-    setTimeout(() => mapa && mapa.invalidateSize(true), 320);
+    target.classList.add('open');
+    if (id === 'view-mapa')      iniciarMapa();
+    if (id === 'view-mapa-full') {
+      iniciarMapaFull();
+      document.getElementById('fullMapCount').textContent = dados.length;
+    }
   } else {
     target.style.display = 'block';
   }
@@ -236,12 +307,11 @@ function renderLista(lista, containerId) {
   }).join('');
 }
 
-/* ── Dropdown Recentes ── */
 let recentesAberto = false;
 function toggleRecentes() {
   recentesAberto = !recentesAberto;
-  const lista  = document.getElementById('listaHome');
-  const seta   = document.getElementById('recentesArrow');
+  const lista = document.getElementById('listaHome');
+  const seta  = document.getElementById('recentesArrow');
   lista.style.display = recentesAberto ? 'flex' : 'none';
   seta.classList.toggle('open', recentesAberto);
 }
@@ -260,9 +330,7 @@ function renderChart() {
     return `
       <div class="bar-col">
         <div class="bar${i === 3 ? ' highlight' : ''}"
-             data-val="${vals[i]}"
-             style="height:0"
-             data-h="${h}"></div>
+             data-val="${vals[i]}" style="height:0" data-h="${h}"></div>
         <span class="bar-day">${d}</span>
       </div>`;
   }).join('');
@@ -272,50 +340,98 @@ function renderChart() {
 }
 
 /* ============================================================
+   GEOCODING
+   ============================================================ */
+async function obterCoordenadasEndereco(endereco) {
+  try {
+    const query = encodeURIComponent(endereco + ', Jaboatão dos Guararapes, PE, Brasil');
+    const url   = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
+    const resp  = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
+    const result = await resp.json();
+    if (result && result.length > 0) {
+      return { lat: parseFloat(result[0].lat), lng: parseFloat(result[0].lon), encontrado: true };
+    }
+  } catch (e) { console.warn('Geocoding falhou:', e); }
+  return {
+    lat: -8.1128 + (Math.random() - 0.5) * 0.018,
+    lng: -34.9092 + (Math.random() - 0.5) * 0.018,
+    encontrado: false
+  };
+}
+
+/* ============================================================
    MODAL RELATAR
    ============================================================ */
-function openRelatar()  { document.getElementById('modal-relatar').classList.add('open'); }
-function closeRelatar() { document.getElementById('modal-relatar').classList.remove('open'); }
+function openRelatar() {
+  document.getElementById('modal-relatar').classList.add('open');
+}
+function closeRelatar() {
+  document.getElementById('modal-relatar').classList.remove('open');
+}
 
-function submitRelatar() {
+let enviando = false;
+async function submitRelatar() {
+  if (enviando) return;
   const tipo = document.getElementById('tipo-select').value;
   const end  = document.getElementById('end-input').value.trim();
-  if (!tipo || !end) { toast('Preencha tipo e endereço!'); return; }
-  const urg = document.getElementById('urg-select').value;
+  const desc = document.getElementById('desc-input').value.trim();
+  const urg  = document.getElementById('urg-select').value;
+  if (!tipo) { toast('Selecione o tipo de ocorrência!'); return; }
+  if (!end)  { toast('Informe o endereço!'); return; }
 
-  dados.unshift({
-    tipo, local: end, tempo: 'Agora', urg,
-    lat: -8.1128 + (Math.random() - 0.5) * 0.02,
-    lng: -34.9092 + (Math.random() - 0.5) * 0.02
-  });
+  enviando = true;
+  const btn = document.querySelector('#modal-relatar .btn-submit');
+  btn.textContent = '📍 Buscando localização...';
+  btn.disabled    = true;
+
+  const coords = await obterCoordenadasEndereco(end);
+  const nova = { tipo, local: end, desc: desc || '', tempo: 'Agora', urg, lat: coords.lat, lng: coords.lng };
+  dados.unshift(nova);
 
   atualizarContadores();
   renderLista(dados, 'listaHome');
   renderLista(dados, 'listaTodas');
-  if (mapa) { renderMarcadores(dados); renderMiniLista(dados); }
+  if (mapaReady)     { renderMarcadores(dados);     renderMiniLista(dados); }
+  if (mapaFullReady) { renderMarcadoresFull(dados); }
 
   closeRelatar();
   document.getElementById('tipo-select').value = '';
   document.getElementById('end-input').value   = '';
   document.getElementById('desc-input').value  = '';
-  toast('Ocorrência registrada! ✅');
+  btn.textContent = 'Enviar Ocorrência';
+  btn.disabled    = false;
+  enviando        = false;
+
+  const msg = coords.encontrado ? `✅ ${tipo} marcado no mapa!` : `✅ Registrado! Pin posicionado aproximadamente.`;
+  toast(msg);
+
+  setTimeout(() => {
+    goTo('view-mapa');
+    setTimeout(() => {
+      if (mapa && mapaReady) {
+        mapa.setView([coords.lat, coords.lng], 16);
+        if (marcadores.length > 0) marcadores[0].openPopup();
+      }
+    }, 400);
+  }, 600);
 }
 
 function atualizarContadores() {
   const n = dados.length;
-  document.getElementById('alertCount').innerHTML = `<span>🔔 </span>${n} Alertas`;
-  document.getElementById('mapaCount').textContent = n;
+  document.getElementById('alertCount').innerHTML     = `<span>🔔 </span>${n} Alertas`;
+  document.getElementById('mapaCount').textContent    = n;
+  document.getElementById('fullMapCount').textContent = n;
   document.getElementById('recentesBadge').textContent = n;
 }
 
 /* ============================================================
-   MODAL CONTATO EMERGÊNCIA
+   MODAL CONTATO
    ============================================================ */
 function openContato()  { document.getElementById('modal-contato').classList.add('open'); }
 function closeContato() { document.getElementById('modal-contato').classList.remove('open'); }
 
 /* ============================================================
-   MODAL CONFIG + TEMA DIA/NOITE
+   MODAL CONFIG + TEMA
    ============================================================ */
 let temaEscuro = false;
 
@@ -329,29 +445,14 @@ function atualizarIconeTema() {
   const wrap  = document.getElementById('themeIcon');
   const label = document.getElementById('themeLabel');
   const track = document.getElementById('toggleTrack');
-
   if (temaEscuro) {
-    wrap.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>`;
+    wrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
     wrap.style.background = '#1e1a30';
     wrap.style.border = '1.5px solid #6d3fa8';
     label.textContent = 'Modo Escuro ativo';
     track.classList.add('active');
   } else {
-    wrap.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20">
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3"/>
-        <line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/>
-        <line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>`;
+    wrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
     wrap.style.background = '#d97706';
     wrap.style.border = 'none';
     label.textContent = 'Modo Claro ativo';
@@ -389,6 +490,12 @@ function submitVistoria() {
 }
 
 /* ============================================================
+   MODAL EDITAR (placeholder)
+   ============================================================ */
+function closeEditar() { document.getElementById('modal-editar').classList.remove('open'); }
+function salvarEdicao() { closeEditar(); toast('Alterações salvas!'); }
+
+/* ============================================================
    TOAST
    ============================================================ */
 function toast(msg) {
@@ -404,8 +511,8 @@ function toast(msg) {
 function atualizarRelogio() {
   const n = new Date();
   document.getElementById('relogio').textContent =
-    String(n.getHours()).padStart(2, '0') + ':' +
-    String(n.getMinutes()).padStart(2, '0');
+    String(n.getHours()).padStart(2,'0') + ':' +
+    String(n.getMinutes()).padStart(2,'0');
 }
 setInterval(atualizarRelogio, 30000);
 atualizarRelogio();
@@ -418,5 +525,3 @@ renderLista(dados, 'listaTodas');
 renderChart();
 atualizarContadores();
 atualizarIconeTema();
-
-
