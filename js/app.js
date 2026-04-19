@@ -1571,7 +1571,7 @@ const _origOpenRelatar = openRelatar;
    ASSISTENTE IA — Gemini (com fallback automático de modelos)
    ============================================================ */
 
-const GEMINI_API_KEY = 'AIzaSyA3Cfp8YcYmVx1FM2U1waO1hE3S9rzM-jk';
+const GEMINI_API_KEY = 'AIzaSyA3bgYkzRjEzD8FD1Na1ZWyWZTiZ-ft5KU';
 
 // ✅ Lista de modelos em ordem de preferência — tenta o próximo se falhar
 const MODELOS = [
