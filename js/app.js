@@ -1571,15 +1571,17 @@ const _origOpenRelatar = openRelatar;
    ASSISTENTE IA — Gemini (com fallback automático de modelos)
    ============================================================ */
 
-const GEMINI_API_KEY = 'AIzaSyA3bgYkzRjEzD8FD1Na1ZWyWZTiZ-ft5KU';
+const GEMINI_API_KEY = 'AIzaSyBdOVA-2YEJ_GYFqSj4Rkj1Bbcugu_btbc';
 
 // ✅ Lista de modelos em ordem de preferência — tenta o próximo se falhar
+// ✅ DEPOIS — Flash-Lite na frente (30 RPM grátis!)
 const MODELOS = [
-  'gemini-2.5-flash',
-  'gemini-2.0-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash-lite',
   'gemini-1.5-flash',
   'gemini-1.5-flash-latest'
 ];
+
 
 let modeloAtual = 0; // índice do modelo sendo usado
 
