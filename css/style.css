@@ -1199,12 +1199,14 @@ body::after {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
+  padding-bottom: 24px; /* ✅ respiro no final */
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   scroll-behavior: smooth;
   overscroll-behavior: contain;
 }
+
 .chat-mensagens::-webkit-scrollbar       { width: 4px; }
 .chat-mensagens::-webkit-scrollbar-track { background: transparent; }
 .chat-mensagens::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 4px; }

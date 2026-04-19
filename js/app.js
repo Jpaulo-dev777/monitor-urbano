@@ -1571,7 +1571,7 @@ const _origOpenRelatar = openRelatar;
    ASSISTENTE IA — Gemini (com fallback automático de modelos)
    ============================================================ */
 
-const GEMINI_API_KEY = 'AIzaSyBdOVA-2YEJ_GYFqSj4Rkj1Bbcugu_btbc';
+const GEMINI_API_KEY = 'AIzaSyCIeAqxjICGpDkYTyCrHCDGyt-9rHAzNCg';
 
 // ✅ Lista de modelos em ordem de preferência — tenta o próximo se falhar
 // ✅ DEPOIS — Flash-Lite na frente (30 RPM grátis!)
@@ -1815,12 +1815,17 @@ function adicionarMensagem(texto, tipo) {
   `;
 
   container.appendChild(div);
+
+  // ✅ Mesmo padrão — elemento sempre totalmente visível
   requestAnimationFrame(() => {
-    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    requestAnimationFrame(() => {
+      div.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    });
   });
 
   if (tipo === 'bot') notificarBadgeChat();
 }
+
 
 /* ─────────────────────────────────────────
    ANIMAÇÃO "DIGITANDO"
@@ -1837,10 +1842,22 @@ function mostrarDigitando() {
       <span class="dots"><span>●</span><span>●</span><span>●</span></span>
     </div>
   `;
+
   container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
+
+  // ✅ Scroll suave até o fim sem jogar pro topo
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      });
+    });
+  });
+
   return div;
 }
+
 
 /* ─────────────────────────────────────────
    UTILITÁRIOS
