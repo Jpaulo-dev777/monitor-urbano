@@ -1568,11 +1568,24 @@ const _origOpenRelatar = openRelatar;
 })();
 
 /* ============================================================
-   ASSISTENTE IA — Gemini 2.0 Flash (correção do erro 400)
+   ASSISTENTE IA — Gemini (com fallback automático de modelos)
    ============================================================ */
 
-const GEMINI_API_KEY = 'AIzaSyCiLgusko8YBq7nbk5C3k18kCLw3alxnZU';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_KEY = 'AIzaSyA3Cfp8YcYmVx1FM2U1waO1hE3S9rzM-jk';
+
+// ✅ Lista de modelos em ordem de preferência — tenta o próximo se falhar
+const MODELOS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-latest'
+];
+
+let modeloAtual = 0; // índice do modelo sendo usado
+
+function getGeminiURL() {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${MODELOS[modeloAtual]}:generateContent?key=${GEMINI_API_KEY}`;
+}
 
 const SYSTEM_PROMPT = `Você é o Assistente de Monitoramento Urbano de Jaboatão dos Guararapes - PE, Brasil.
 Seu foco exclusivo é: clima, prevenção de desastres, alagamentos, deslizamentos e emergências urbanas.
@@ -1591,11 +1604,7 @@ REGRAS:
 - Contexto: Jaboatão dos Guararapes fica na Região Metropolitana do Recife,
   área sujeita a chuvas intensas especialmente de março a agosto`;
 
-/* ─────────────────────────────────────────
-   HISTÓRICO — pares completos [user, model]
-   Garante alternância correta e nunca corrompe
-───────────────────────────────────────── */
-let historicoChat = []; // Sempre pares: [{role:'user',...}, {role:'model',...}]
+let historicoChat = [];
 
 /* ─────────────────────────────────────────
    ENVIAR MENSAGEM
@@ -1619,12 +1628,12 @@ async function enviarMensagem() {
   setStatusChat('⏳ Digitando...', true);
 
   try {
-    const resposta = await chamarGemini(texto);
+    const resposta = await chamarGeminiComFallback(texto);
     digitando.remove();
     adicionarMensagem(resposta, 'bot');
   } catch (erro) {
     digitando.remove();
-    console.error('[Gemini] Erro:', erro.message);
+    console.error('[Gemini] Erro final:', erro.message);
     adicionarMensagem(obterMsgErro(erro), 'bot');
   } finally {
     if (btnEnviar) btnEnviar.disabled = false;
@@ -1633,15 +1642,42 @@ async function enviarMensagem() {
 }
 
 /* ─────────────────────────────────────────
-   CHAMAR API GEMINI — sem erro 400
+   CHAMAR COM FALLBACK AUTOMÁTICO DE MODELOS
+───────────────────────────────────────── */
+async function chamarGeminiComFallback(pergunta) {
+  for (let i = 0; i < MODELOS.length; i++) {
+    modeloAtual = i;
+    try {
+      console.info(`[Gemini] Tentando modelo: ${MODELOS[i]}`);
+      const resposta = await chamarGemini(pergunta);
+      console.info(`[Gemini] ✅ Sucesso com: ${MODELOS[i]}`);
+      return resposta;
+    } catch (erro) {
+      const msg = erro.message || '';
+      // Só tenta próximo modelo em erros de modelo inválido/não encontrado
+      const tentarProximo =
+        msg.includes('HTTP_400') ||
+        msg.includes('HTTP_404') ||
+        msg.includes('not found') ||
+        msg.includes('not supported');
+
+      if (tentarProximo && i < MODELOS.length - 1) {
+        console.warn(`[Gemini] Modelo ${MODELOS[i]} falhou, tentando próximo...`);
+        continue;
+      }
+      throw erro; // Relança se for outro tipo de erro (401, 429, rede, etc.)
+    }
+  }
+  throw new Error('TODOS_MODELOS_FALHARAM');
+}
+
+/* ─────────────────────────────────────────
+   CHAMAR API GEMINI
 ───────────────────────────────────────── */
 async function chamarGemini(pergunta) {
-
-  /* ✅ Monta o conteúdo com histórico anterior + nova pergunta
-     Garante que começa sempre com 'user' e alterna corretamente */
   const contents = [
-    ...historicoChat,          // pares anteriores (user+model)
-    { role: 'user', parts: [{ text: pergunta }] }  // nova pergunta
+    ...historicoChat,
+    { role: 'user', parts: [{ text: pergunta }] }
   ];
 
   const body = {
@@ -1650,29 +1686,27 @@ async function chamarGemini(pergunta) {
     },
     contents,
     generationConfig: {
-      temperature:     0.7,
+      temperature: 0.7,
       maxOutputTokens: 600,
-      topP:            0.9,
+      topP: 0.9
     }
   };
 
-  /* AbortController manual — compatível com todos os browsers */
   const controller = new AbortController();
-  const timeoutId  = setTimeout(() => controller.abort(), 20000);
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
 
   let resp;
   try {
-    resp = await fetch(GEMINI_URL, {
-      method:  'POST',
+    resp = await fetch(getGeminiURL(), {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(body),
-      signal:  controller.signal
+      body: JSON.stringify(body),
+      signal: controller.signal
     });
   } finally {
     clearTimeout(timeoutId);
   }
 
-  /* Loga o erro HTTP real para debug */
   if (!resp.ok) {
     let detalhes = '';
     try {
@@ -1681,34 +1715,29 @@ async function chamarGemini(pergunta) {
     } catch (_) {
       detalhes = await resp.text().catch(() => '');
     }
-    console.error(`[Gemini] HTTP ${resp.status}:`, detalhes);
+    console.error(`[Gemini] HTTP ${resp.status} (${MODELOS[modeloAtual]}):`, detalhes);
     throw new Error(`HTTP_${resp.status}::${detalhes}`);
   }
 
-  const data  = await resp.json();
+  const data = await resp.json();
   const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!texto) {
-    /* Pode ser bloqueio de segurança — loga o motivo */
-    const motivo = data?.candidates?.[0]?.finishReason
-                || data?.promptFeedback?.blockReason
-                || 'desconhecido';
-    console.warn('[Gemini] Resposta vazia. Motivo:', motivo, JSON.stringify(data));
+    const motivo =
+      data?.candidates?.[0]?.finishReason ||
+      data?.promptFeedback?.blockReason ||
+      'desconhecido';
+    console.warn('[Gemini] Resposta vazia. Motivo:', motivo);
     throw new Error(`RESPOSTA_VAZIA::${motivo}`);
   }
 
-  /* ✅ Só salva no histórico DEPOIS de receber resposta com sucesso
-     Evita histórico corrompido em caso de erro */
   historicoChat.push(
-    { role: 'user',  parts: [{ text: pergunta }] },
-    { role: 'model', parts: [{ text: texto    }] }
+    { role: 'user', parts: [{ text: pergunta }] },
+    { role: 'model', parts: [{ text: texto }] }
   );
 
-  /* ✅ Mantém apenas os últimos 5 pares (10 mensagens)
-     e garante que sempre começa com 'user' */
   if (historicoChat.length > 10) {
     historicoChat = historicoChat.slice(-10);
-    /* Garante que o primeiro item é sempre 'user' */
     if (historicoChat[0]?.role !== 'user') {
       historicoChat = historicoChat.slice(1);
     }
@@ -1727,28 +1756,28 @@ function obterMsgErro(erro) {
     return '⏱️ A resposta demorou muito. Verifique sua conexão e tente novamente.';
   }
   if (msg.includes('HTTP_400')) {
-    return '❌ Erro na requisição (400). Recarregue a página e tente novamente.';
+    return '❌ Erro 400: Verifique se sua chave tem billing ativo em aistudio.google.com. O plano gratuito pode não funcionar no Brasil.';
   }
   if (msg.includes('HTTP_401') || msg.includes('HTTP_403')) {
-    return '🔑 Chave de API inválida. Verifique em aistudio.google.com.';
+    return '🔑 Chave de API inválida ou sem permissão. Gere uma nova em aistudio.google.com.';
   }
   if (msg.includes('HTTP_429')) {
-    return '⏳ Muitas requisições. Aguarde alguns segundos e tente novamente.';
+    return '⏳ Limite de requisições atingido. Aguarde alguns segundos e tente novamente.';
   }
   if (msg.includes('HTTP_5')) {
-    return '🔧 Serviço do Google indisponível no momento. Tente em alguns instantes.';
-  }
-  if (msg.includes('SAFETY')) {
-    return '🚫 Mensagem bloqueada por segurança. Tente reformular sua pergunta.';
+    return '🔧 Serviço do Google indisponível. Tente em alguns instantes.';
   }
   if (msg.includes('RESPOSTA_VAZIA')) {
     return '🤔 Não obtive resposta. Tente reformular sua pergunta.';
+  }
+  if (msg.includes('TODOS_MODELOS_FALHARAM')) {
+    return '❌ Nenhum modelo disponível. Verifique sua chave API em aistudio.google.com.';
   }
   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
     return '📡 Sem conexão com a internet.\n\nEmergências: Defesa Civil **(81) 3469-5701**';
   }
 
-  return '⚠️ Erro inesperado. Abra o console (F12) para ver o detalhe.\n\nAjuda imediata: **(81) 3469-5701**';
+  return '⚠️ Erro inesperado. Abra o console (F12) para ver o detalhe.\n\nAjuda: **(81) 3469-5701**';
 }
 
 /* ─────────────────────────────────────────
@@ -1756,7 +1785,10 @@ function obterMsgErro(erro) {
 ───────────────────────────────────────── */
 function perguntaRapida(texto) {
   const input = document.getElementById('chat-input');
-  if (input) { input.value = texto; autoResize(input); }
+  if (input) {
+    input.value = texto;
+    autoResize(input);
+  }
   enviarMensagem();
 }
 
@@ -1772,8 +1804,8 @@ function adicionarMensagem(texto, tipo) {
 
   const html = texto
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g,     '<em>$1</em>')
-    .replace(/\n/g,             '<br>');
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
 
   div.innerHTML = `
     <span class="msg-avatar">${tipo === 'bot' ? '🤖' : '👤'}</span>
@@ -1820,7 +1852,7 @@ function setStatusChat(texto, digitando) {
   const el = document.getElementById('chat-status');
   if (!el) return;
   el.textContent = texto;
-  el.className   = 'chat-status' + (digitando ? ' digitando' : '');
+  el.className = 'chat-status' + (digitando ? ' digitando' : '');
 }
 
 function chatKeyDown(e) {
@@ -1838,21 +1870,23 @@ function autoResize(el) {
 
 function notificarBadgeChat() {
   const viewChat = document.getElementById('view-chat');
-  const oculto   = !viewChat
-                || viewChat.style.display === 'none'
-                || viewChat.style.display === '';
+  const oculto =
+    !viewChat ||
+    viewChat.style.display === 'none' ||
+    viewChat.style.display === '';
   if (oculto) {
     document.getElementById('nav-chat')?.classList.add('has-badge');
   }
 }
 
 /* ─────────────────────────────────────────
-   TESTE DE CONEXÃO ao carregar a página
+   TESTE DE CONEXÃO — descobre modelo disponível
 ───────────────────────────────────────── */
 async function testarConexaoGemini() {
+  setStatusChat('⏳ Conectando...', true);
   try {
     const controller = new AbortController();
-    setTimeout(() => controller.abort(), 5000);
+    setTimeout(() => controller.abort(), 8000);
 
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`,
@@ -1861,10 +1895,33 @@ async function testarConexaoGemini() {
 
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      console.warn(`[Gemini] Teste falhou HTTP ${resp.status}:`, err?.error?.message);
-      setStatusChat('⚠️ API indisponível', false);
+      const errMsg = err?.error?.message || '';
+      console.warn(`[Gemini] Teste falhou HTTP ${resp.status}:`, errMsg);
+
+      if (resp.status === 400 || resp.status === 403) {
+        setStatusChat('⚠️ Chave inválida ou sem billing', false);
+      } else {
+        setStatusChat('⚠️ API indisponível', false);
+      }
+      return;
+    }
+
+    // Descobre quais modelos estão disponíveis e ajusta a lista
+    const data = await resp.json();
+    const nomesDisponiveis = (data.models || []).map(m =>
+      m.name.replace('models/', '')
+    );
+    console.info('[Gemini] Modelos disponíveis:', nomesDisponiveis);
+
+    // Encontra o melhor modelo disponível
+    const melhor = MODELOS.find(m => nomesDisponiveis.includes(m));
+    if (melhor) {
+      modeloAtual = MODELOS.indexOf(melhor);
+      console.info(`[Gemini] ✅ Usando modelo: ${melhor}`);
+      setStatusChat('● Online', false);
     } else {
-      console.info('[Gemini] ✅ Conexão OK — pronto para uso');
+      console.warn('[Gemini] Nenhum modelo preferido disponível');
+      setStatusChat('⚠️ Modelos indisponíveis', false);
     }
   } catch (e) {
     console.warn('[Gemini] Sem conexão:', e.message);
@@ -1873,7 +1930,6 @@ async function testarConexaoGemini() {
 }
 
 document.addEventListener('DOMContentLoaded', testarConexaoGemini);
-
 
 
 
