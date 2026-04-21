@@ -1567,107 +1567,525 @@ const _origOpenRelatar = openRelatar;
   };
 })();
 
+// /* ============================================================
+//    ASSISTENTE IA — Gemini (Versão Backend Limpa)
+//    ============================================================ */
+
+// const SYSTEM_PROMPT = `Você é o Assistente de Monitoramento Urbano de Jaboatão dos Guararapes - PE, Brasil.
+// Seu foco exclusivo é: clima, prevenção de desastres, alagamentos, deslizamentos e emergências urbanas.
+
+// REGRAS:
+// - Responda SEMPRE em português brasileiro
+// - Seja direto, claro e acessível (linguagem simples)
+// - Priorize informações práticas e acionáveis
+// - Para emergências, sempre forneça telefones úteis:
+//   • Defesa Civil Jaboatão: (81) 3469-5701
+//   • SAMU: 192 | Bombeiros: 193 | Polícia: 190 | Defesa Civil Nacional: 199
+// - Se não souber algo específico local, oriente de forma geral mas mencione a Defesa Civil
+// - Respostas curtas e objetivas (máx. 200 palavras, exceto quando pedir detalhes)
+// - Use emojis com moderação para facilitar leitura
+// - Nunca responda sobre assuntos fora do escopo (política, entretenimento, etc.)
+// - Contexto: Jaboatão dos Guararapes fica na Região Metropolitana do Recife,
+//   área sujeita a chuvas intensas especialmente de março a agosto`;
+
+// let historicoChat = []; // Sempre pares: [{role:'user',...}, {role:'model',...}]
+
+// // Defina aqui a rota da sua API (Use '/.netlify/functions/gemini' se estiver usando Netlify)
+// const API_ENDPOINT = '/api/gemini'; 
+
+// /* ─────────────────────────────────────────
+//    CHAMAR API GEMINI (Via Backend)
+// ───────────────────────────────────────── */
+// async function chamarGemini(pergunta) {
+//   const contents = [
+//     ...historicoChat,
+//     { role: 'user', parts: [{ text: pergunta }] }
+//   ];
+
+//   const controller = new AbortController();
+//   const timeoutId  = setTimeout(() => controller.abort(), 20000);
+
+//   let resp;
+//   try {
+//     resp = await fetch(API_ENDPOINT, { 
+//       method:  'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({
+//         messages: contents,
+//         systemPrompt: SYSTEM_PROMPT
+//       }),
+//       signal: controller.signal
+//     });
+//   } finally {
+//     clearTimeout(timeoutId);
+//   }
+
+//   if (!resp.ok) {
+//     let detalhes = '';
+//     try {
+//       const errJson = await resp.json();
+//       detalhes = errJson?.error || `HTTP ${resp.status}`;
+//     } catch (_) {
+//       detalhes = await resp.text().catch(() => '');
+//     }
+//     console.error(`[Gemini] HTTP ${resp.status}:`, detalhes);
+//     throw new Error(`HTTP_${resp.status}::${detalhes}`);
+//   }
+
+//   const data = await resp.json();
+
+//   if (data.error) {
+//     throw new Error(data.error);
+//   }
+
+//   const texto = data.text;
+
+//   // Salva no histórico após sucesso
+//   historicoChat.push(
+//     { role: 'user',  parts: [{ text: pergunta }] },
+//     { role: 'model', parts: [{ text: texto    }] }
+//   );
+
+//   // Mantém só os últimos 5 pares (10 mensagens no total)
+//   if (historicoChat.length > 10) {
+//     historicoChat = historicoChat.slice(-10);
+//     if (historicoChat[0]?.role !== 'user') {
+//       historicoChat = historicoChat.slice(1);
+//     }
+//   }
+
+//   return texto;
+// }
+
+// /* ─────────────────────────────────────────
+//    TESTE DE CONEXÃO
+// ───────────────────────────────────────── */
+// async function testarConexaoGemini() {
+//   try {
+//     const controller = new AbortController();
+//     setTimeout(() => controller.abort(), 5000);
+
+//     const resp = await fetch(API_ENDPOINT, {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({
+//         messages: [{ role: 'user', parts: [{ text: 'ping' }] }],
+//         systemPrompt: 'Responda apenas: pong'
+//       }),
+//       signal: controller.signal
+//     });
+
+//     if (resp.ok) {
+//       console.info('[Gemini] ✅ Conexão OK — pronto para uso');
+//     } else {
+//       console.warn('[Gemini] ⚠️ API retornou:', resp.status);
+//       setStatusChat('⚠️ API indisponível', false);
+//     }
+//   } catch (e) {
+//     console.warn('[Gemini] Sem conexão:', e.message);
+//     setStatusChat('📡 Sem conexão', false);
+//   }
+// }
+
+// // Inicia o teste ao carregar a página
+// document.addEventListener('DOMContentLoaded', testarConexaoGemini);
+
+// /* ─────────────────────────────────────────
+//    ENVIAR MENSAGEM
+// ───────────────────────────────────────── */
+// async function enviarMensagem() {
+//   const input = document.getElementById('chat-input');
+//   if (!input) return;
+
+//   const texto = input.value.trim();
+//   if (!texto) return;
+
+//   input.value = '';
+//   autoResize(input);
+
+//   adicionarMensagem(texto, 'usuario');
+//   ocultarPerguntasRapidas();
+
+//   const digitando = mostrarDigitando();
+//   const btnEnviar = document.getElementById('btn-enviar');
+//   if (btnEnviar) btnEnviar.disabled = true;
+//   setStatusChat('⏳ Digitando...', true);
+
+//   try {
+//     const resposta = await chamarGemini(texto);
+//     digitando.remove();
+//     adicionarMensagem(resposta, 'bot');
+//   } catch (erro) {
+//     digitando.remove();
+//     console.error('[Gemini] Erro:', erro.message);
+//     adicionarMensagem(obterMsgErro(erro), 'bot');
+//   } finally {
+//     if (btnEnviar) btnEnviar.disabled = false;
+//     setStatusChat('● Online', false);
+//   }
+// }
+
+// /* ─────────────────────────────────────────
+//    MENSAGEM DE ERRO AMIGÁVEL
+// ───────────────────────────────────────── */
+// function obterMsgErro(erro) {
+//   const msg = erro?.message || '';
+
+//   if (msg.includes('abort') || msg.toLowerCase().includes('aborterror')) {
+//     return '⏱️ A resposta demorou muito. Verifique sua conexão e tente novamente.';
+//   }
+//   if (msg.includes('HTTP_400')) {
+//     return '❌ Erro na requisição (400). Recarregue a página e tente novamente.';
+//   }
+//   if (msg.includes('HTTP_429')) {
+//     return '⏳ Muitas requisições. Aguarde alguns segundos e tente novamente.';
+//   }
+//   if (msg.includes('HTTP_5')) {
+//     return '🔧 Serviço indisponível no momento. Tente em alguns instantes.';
+//   }
+//   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+//     return '📡 Sem conexão com a internet.\n\nEmergências: Defesa Civil **(81) 3469-5701**';
+//   }
+
+//   return '⚠️ Erro inesperado. Abra o console (F12) para ver o detalhe.\n\nAjuda imediata: **(81) 3469-5701**';
+// }
+
+// /* ─────────────────────────────────────────
+//    PERGUNTA RÁPIDA, UI E UTILITÁRIOS
+// ───────────────────────────────────────── */
+// function perguntaRapida(texto) {
+//   const input = document.getElementById('chat-input');
+//   if (input) { input.value = texto; autoResize(input); }
+//   enviarMensagem();
+// }
+
+// function adicionarMensagem(texto, tipo) {
+//   const container = document.getElementById('chat-mensagens');
+//   if (!container) return;
+
+//   const div = document.createElement('div');
+//   div.className = `msg ${tipo}`;
+
+//   const html = texto
+//     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+//     .replace(/\*(.*?)\*/g,     '<em>$1</em>')
+//     .replace(/\n/g,             '<br>');
+
+//   div.innerHTML = `
+//     <span class="msg-avatar">${tipo === 'bot' ? '🤖' : '👤'}</span>
+//     <div class="msg-balao">${html}</div>
+//   `;
+
+//   container.appendChild(div);
+//   requestAnimationFrame(() => {
+//     container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+//   });
+
+//   if (tipo === 'bot') notificarBadgeChat();
+// }
+
+// function mostrarDigitando() {
+//   const container = document.getElementById('chat-mensagens');
+//   if (!container) return { remove: () => {} };
+
+//   const div = document.createElement('div');
+//   div.className = 'msg bot msg-digitando';
+//   div.innerHTML = `
+//     <span class="msg-avatar">🤖</span>
+//     <div class="msg-balao">
+//       <span class="dots"><span>●</span><span>●</span><span>●</span></span>
+//     </div>
+//   `;
+//   container.appendChild(div);
+//   container.scrollTop = container.scrollHeight;
+//   return div;
+// }
+
+// function ocultarPerguntasRapidas() {
+//   const el = document.getElementById('chat-rapidas');
+//   if (el) el.style.display = 'none';
+// }
+
+// function setStatusChat(texto, digitando) {
+//   const el = document.getElementById('chat-status');
+//   if (!el) return;
+//   el.textContent = texto;
+//   el.className   = 'chat-status' + (digitando ? ' digitando' : '');
+// }
+
+// function chatKeyDown(e) {
+//   if (e.key === 'Enter' && !e.shiftKey) {
+//     e.preventDefault();
+//     enviarMensagem();
+//   }
+// }
+
+// function autoResize(el) {
+//   if (!el) return;
+//   el.style.height = 'auto';
+//   el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+// }
+
+// function notificarBadgeChat() {
+//   const viewChat = document.getElementById('view-chat');
+//   const oculto   = !viewChat
+//                 || viewChat.style.display === 'none'
+//                 || viewChat.style.display === '';
+//   if (oculto) {
+//     document.getElementById('nav-chat')?.classList.add('has-badge');
+//   }
+// }
+
+
 /* ============================================================
-   ASSISTENTE IA — Gemini 2.0 Flash (correção do erro 400)
+   ASSISTENTE IA — TESTE LOCAL NO LIVE SERVER (QUEBRA-GALHO)
    ============================================================ */
 
+// const SYSTEM_PROMPT = `Você é o Assistente de Monitoramento Urbano de Jaboatão dos Guararapes - PE, Brasil.
+// Seu foco exclusivo é: clima, prevenção de desastres, alagamentos, deslizamentos e emergências urbanas.
 
-// ❌ REMOVA ESSAS DUAS LINHAS
-// const GEMINI_API_KEY = 'AIzaSy...';
-// const GEMINI_URL = `https://generativelanguage...`;
+// REGRAS:
+// - Responda SEMPRE em português brasileiro
+// - Seja direto, claro e acessível (linguagem simples)
+// - Priorize informações práticas e acionáveis
+// - Para emergências, sempre forneça telefones úteis:
+//   • Defesa Civil Jaboatão: (81) 3469-5701
+//   • SAMU: 192 | Bombeiros: 193 | Polícia: 190 | Defesa Civil Nacional: 199
+// - Se não souber algo específico local, oriente de forma geral mas mencione a Defesa Civil
+// - Respostas curtas e objetivas (máx. 200 palavras, exceto quando pedir detalhes)
+// - Use emojis com moderação para facilitar leitura
+// - Nunca responda sobre assuntos fora do escopo (política, entretenimento, etc.)
+// - Contexto: Jaboatão dos Guararapes fica na Região Metropolitana do Recife,
+//   área sujeita a chuvas intensas especialmente de março a agosto`;
+
+// let historicoChat = [];
+
+// // ⚠️ ATENÇÃO: COLOQUE SUA CHAVE AQUI APENAS PARA TESTAR NO LIVE SERVER!
+// const CHAVE_LOCAL_TESTE = 'AIzaSyAHIOkk4HxTN8mTznbvz-x710bB0PyQLmY'; 
+
+// /* ─────────────────────────────────────────
+//    CHAMAR API GEMINI (Direto pro Google - Só para teste local)
+// ───────────────────────────────────────── */
+// async function chamarGemini(pergunta) {
+//   const contents = [
+//     ...historicoChat,
+//     { role: 'user', parts: [{ text: pergunta }] }
+//   ];
+
+//   const body = {
+//     system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+//     contents,
+//     generationConfig: { temperature: 0.7, maxOutputTokens: 600, topP: 0.9 }
+//   };
+
+//   const controller = new AbortController();
+//   const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+//   let resp;
+//   try {
+//     resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${CHAVE_LOCAL_TESTE}`, {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify(body),
+//       signal: controller.signal
+//     });
+//   } finally {
+//     clearTimeout(timeoutId);
+//   }
+
+//   if (!resp.ok) {
+//     let detalhes = '';
+//     try {
+//       const errJson = await resp.json();
+//       detalhes = errJson?.error?.message || `HTTP ${resp.status}`;
+//     } catch (_) {
+//       detalhes = await resp.text().catch(() => '');
+//     }
+//     console.error(`[Gemini] HTTP ${resp.status}:`, detalhes);
+//     throw new Error(`HTTP_${resp.status}::${detalhes}`);
+//   }
+  
+//   const data = await resp.json();
+//   const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+//   if (!texto) throw new Error('Resposta vazia');
+
+//   // Salva no histórico
+//   historicoChat.push(
+//     { role: 'user', parts: [{ text: pergunta }] },
+//     { role: 'model', parts: [{ text: texto }] }
+//   );
+
+//   // Mantém apenas os últimos 5 pares (10 mensagens)
+//   if (historicoChat.length > 10) {
+//     historicoChat = historicoChat.slice(-10);
+//     if (historicoChat[0]?.role !== 'user') historicoChat = historicoChat.slice(1);
+//   }
+
+//   return texto;
+// }
+
+// /* ─────────────────────────────────────────
+//    TESTE DE CONEXÃO SIMPLIFICADO
+// ───────────────────────────────────────── */
+// async function testarConexaoGemini() {
+//   console.info('[Gemini] Testando conexão direta local...');
+//   if (CHAVE_LOCAL_TESTE === 'COLE_AQUI_SUA_CHAVE_DO_GOOGLE') {
+//     setStatusChat('⚠️ Coloque a chave no código!', false);
+//     console.warn('Você esqueceu de colocar a chave na variável CHAVE_LOCAL_TESTE');
+//   } else {
+//     setStatusChat('● Online', false); 
+//   }
+// }
+
+// // Inicia o teste ao carregar a página
+// document.addEventListener('DOMContentLoaded', testarConexaoGemini);
+
+// /* ─────────────────────────────────────────
+//    ENVIAR MENSAGEM
+// ───────────────────────────────────────── */
+// async function enviarMensagem() {
+//   const input = document.getElementById('chat-input');
+//   if (!input) return;
+
+//   const texto = input.value.trim();
+//   if (!texto) return;
+
+//   input.value = '';
+//   autoResize(input);
+
+//   adicionarMensagem(texto, 'usuario');
+//   ocultarPerguntasRapidas();
+
+//   const digitando = mostrarDigitando();
+//   const btnEnviar = document.getElementById('btn-enviar');
+//   if (btnEnviar) btnEnviar.disabled = true;
+//   setStatusChat('⏳ Digitando...', true);
+
+//   try {
+//     const resposta = await chamarGemini(texto);
+//     digitando.remove();
+//     adicionarMensagem(resposta, 'bot');
+//   } catch (erro) {
+//     digitando.remove();
+//     console.error('[Gemini] Erro:', erro.message);
+//     adicionarMensagem(obterMsgErro(erro), 'bot');
+//   } finally {
+//     if (btnEnviar) btnEnviar.disabled = false;
+//     setStatusChat('● Online', false);
+//   }
+// }
+
+// /* ─────────────────────────────────────────
+//    MENSAGEM DE ERRO AMIGÁVEL
+// ───────────────────────────────────────── */
+// function obterMsgErro(erro) {
+//   const msg = erro?.message || '';
+
+//   if (msg.includes('abort') || msg.toLowerCase().includes('aborterror')) {
+//     return '⏱️ A resposta demorou muito. Verifique sua conexão e tente novamente.';
+//   }
+//   if (msg.includes('HTTP_400')) return '❌ Erro na requisição (400). Recarregue a página e tente novamente.';
+//   if (msg.includes('HTTP_403') || msg.includes('API_KEY_INVALID')) return '🔑 Chave de API inválida.';
+//   if (msg.includes('HTTP_429')) return '⏳ Muitas requisições. Aguarde alguns segundos e tente novamente.';
+//   if (msg.includes('HTTP_5')) return '🔧 Serviço indisponível no momento. Tente em alguns instantes.';
+//   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+//     return '📡 Sem conexão com a internet.\n\nEmergências: Defesa Civil **(81) 3469-5701**';
+//   }
+
+//   return '⚠️ Erro inesperado. Abra o console (F12) para ver o detalhe.\n\nAjuda imediata: **(81) 3469-5701**';
+// }
+
+// /* ─────────────────────────────────────────
+//    PERGUNTA RÁPIDA, UI E UTILITÁRIOS
+// ───────────────────────────────────────── */
+// function perguntaRapida(texto) {
+//   const input = document.getElementById('chat-input');
+//   if (input) { input.value = texto; autoResize(input); }
+//   enviarMensagem();
+// }
+
+// function adicionarMensagem(texto, tipo) {
+//   const container = document.getElementById('chat-mensagens');
+//   if (!container) return;
+
+//   const div = document.createElement('div');
+//   div.className = `msg ${tipo}`;
+
+//   const html = texto
+//     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+//     .replace(/\*(.*?)\*/g,     '<em>$1</em>')
+//     .replace(/\n/g,             '<br>');
+
+//   div.innerHTML = `
+//     <span class="msg-avatar">${tipo === 'bot' ? '🤖' : '👤'}</span>
+//     <div class="msg-balao">${html}</div>
+//   `;
+
+//   container.appendChild(div);
+//   requestAnimationFrame(() => {
+//     container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+//   });
+
+//   if (tipo === 'bot') notificarBadgeChat();
+// }
+
+// function mostrarDigitando() {
+//   const container = document.getElementById('chat-mensagens');
+//   if (!container) return { remove: () => {} };
+
+//   const div = document.createElement('div');
+//   div.className = 'msg bot msg-digitando';
+//   div.innerHTML = `
+//     <span class="msg-avatar">🤖</span>
+//     <div class="msg-balao">
+//       <span class="dots"><span>●</span><span>●</span><span>●</span></span>
+//     </div>
+//   `;
+//   container.appendChild(div);
+//   container.scrollTop = container.scrollHeight;
+//   return div;
+// }
+
+// function ocultarPerguntasRapidas() {
+//   const el = document.getElementById('chat-rapidas');
+//   if (el) el.style.display = 'none';
+// }
+
+// function setStatusChat(texto, digitando) {
+//   const el = document.getElementById('chat-status');
+//   if (!el) return;
+//   el.textContent = texto;
+//   el.className   = 'chat-status' + (digitando ? ' digitando' : '');
+// }
+
+// function chatKeyDown(e) {
+//   if (e.key === 'Enter' && !e.shiftKey) {
+//     e.preventDefault();
+//     enviarMensagem();
+//   }
+// }
+
+// function autoResize(el) {
+//   if (!el) return;
+//   el.style.height = 'auto';
+//   el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+// }
+
+// function notificarBadgeChat() {
+//   const viewChat = document.getElementById('view-chat');
+//   const oculto   = !viewChat
+//                 || viewChat.style.display === 'none'
+//                 || viewChat.style.display === '';
+//   if (oculto) {
+//     document.getElementById('nav-chat')?.classList.add('has-badge');
+//   }
+// }
 
 
-// ✅ NOVA função chamarGemini — chama seu backend /api/gemini
-async function chamarGemini(pergunta) {
-
-  const contents = [
-    ...historicoChat,
-    { role: 'user', parts: [{ text: pergunta }] }
-  ];
-
-  const controller = new AbortController();
-  const timeoutId  = setTimeout(() => controller.abort(), 20000);
-
-  let resp;
-  try {
-    resp = await fetch('/api/gemini', {        // ← chama sua API Route
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages:     contents,
-        systemPrompt: SYSTEM_PROMPT
-      }),
-      signal: controller.signal
-    });
-  } finally {
-    clearTimeout(timeoutId);
-  }
-
-  if (!resp.ok) {
-    let detalhes = '';
-    try {
-      const errJson = await resp.json();
-      detalhes = errJson?.error || `HTTP ${resp.status}`;
-    } catch (_) {
-      detalhes = await resp.text().catch(() => '');
-    }
-    console.error(`[Gemini] HTTP ${resp.status}:`, detalhes);
-    throw new Error(`HTTP_${resp.status}::${detalhes}`);
-  }
-
-  const data  = await resp.json();
-
-  if (data.error) {
-    throw new Error(data.error);
-  }
-
-  const texto = data.text;
-
-  // Salva no histórico após sucesso
-  historicoChat.push(
-    { role: 'user',  parts: [{ text: pergunta }] },
-    { role: 'model', parts: [{ text: texto    }] }
-  );
-
-  // Mantém só os últimos 5 pares
-  if (historicoChat.length > 10) {
-    historicoChat = historicoChat.slice(-10);
-    if (historicoChat[0]?.role !== 'user') {
-      historicoChat = historicoChat.slice(1);
-    }
-  }
-
-  return texto;
-}
-
-
-// ✅ NOVA função testarConexaoGemini — testa via backend
-async function testarConexaoGemini() {
-  try {
-    const controller = new AbortController();
-    setTimeout(() => controller.abort(), 5000);
-
-    const resp = await fetch('/api/gemini', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', parts: [{ text: 'ping' }] }],
-        systemPrompt: 'Responda apenas: pong'
-      }),
-      signal: controller.signal
-    });
-
-    if (resp.ok) {
-      console.info('[Gemini] ✅ Conexão OK — pronto para uso');
-    } else {
-      console.warn('[Gemini] ⚠️ API retornou:', resp.status);
-      setStatusChat('⚠️ API indisponível', false);
-    }
-  } catch (e) {
-    console.warn('[Gemini] Sem conexão:', e.message);
-    setStatusChat('📡 Sem conexão', false);
-  }
-}
+/* ============================================================
+   ASSISTENTE IA — TESTE LOCAL (APP FUNCIONANDO NORMALMENTE)
+   ============================================================ */
 
 const SYSTEM_PROMPT = `Você é o Assistente de Monitoramento Urbano de Jaboatão dos Guararapes - PE, Brasil.
 Seu foco exclusivo é: clima, prevenção de desastres, alagamentos, deslizamentos e emergências urbanas.
@@ -1686,11 +2104,128 @@ REGRAS:
 - Contexto: Jaboatão dos Guararapes fica na Região Metropolitana do Recife,
   área sujeita a chuvas intensas especialmente de março a agosto`;
 
+let historicoChat = [];
+
+// ⚠️ ATENÇÃO: COLOQUE SUA CHAVE AQUI APENAS PARA TESTAR NO LIVE SERVER!
+const CHAVE_LOCAL_TESTE = 'AIzaSyB5Usogb9HWKvUFM2HwwKYbbNkSInGyy0w'; 
+
 /* ─────────────────────────────────────────
-   HISTÓRICO — pares completos [user, model]
-   Garante alternância correta e nunca corrompe
+   CHAMAR API GEMINI
 ───────────────────────────────────────── */
-let historicoChat = []; // Sempre pares: [{role:'user',...}, {role:'model',...}]
+async function chamarGemini(pergunta) {
+  const contents = [
+    ...historicoChat,
+    { role: 'user', parts: [{ text: pergunta }] }
+  ];
+
+  const body = {
+    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents,
+    generationConfig: { temperature: 0.7, maxOutputTokens: 600, topP: 0.9 }
+  };
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000); 
+
+  let resp;
+  try {
+    resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${CHAVE_LOCAL_TESTE}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  if (!resp.ok) {
+    let detalhes = '';
+    try {
+      const errJson = await resp.json();
+      detalhes = errJson?.error?.message || `HTTP ${resp.status}`;
+    } catch (_) {
+      detalhes = await resp.text().catch(() => '');
+    }
+    throw new Error(`HTTP_${resp.status}::${detalhes}`);
+  }
+  
+  const data = await resp.json();
+  const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!texto) throw new Error('Resposta vazia');
+
+  historicoChat.push(
+    { role: 'user', parts: [{ text: pergunta }] },
+    { role: 'model', parts: [{ text: texto }] }
+  );
+
+  if (historicoChat.length > 10) {
+    historicoChat = historicoChat.slice(-10);
+    if (historicoChat[0]?.role !== 'user') historicoChat = historicoChat.slice(1);
+  }
+
+  return texto;
+}
+
+/* ─────────────────────────────────────────
+   ESTILOS: O SEGREDO DO LAYOUT PERFEITO
+───────────────────────────────────────── */
+function configurarLayoutChat() {
+  if (!document.getElementById('estilo-layout-chat')) {
+    const estiloCss = document.createElement('style');
+    estiloCss.id = 'estilo-layout-chat';
+    estiloCss.innerHTML = `
+      /* TRUQUE NINJA: Aplica o Flexbox APENAS se o app não estiver tentando esconder a aba (display:none) */
+      #view-chat:not([style*="display: none"]):not([style*="display:none"]) {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+      }
+
+      #view-chat {
+        box-sizing: border-box !important;
+        /* Espaço da barra branca inferior. (Se ainda ficar um espacinho, diminua para 70px) */
+        padding-bottom: 75px !important; 
+      }
+
+      /* A área de mensagens agora estica e "empurra" o campo de texto lá pro fundo */
+      #chat-mensagens {
+        flex: 1 1 auto !important;
+        height: 0px !important; /* Mágica para o flexbox dar rolagem correta */
+        max-height: none !important; /* Removemos o limite que deixava voando */
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding-right: 5px !important;
+      }
+      
+      /* A caixa de texto não encolhe e fica coladinha embaixo */
+      #chat-rapidas, .chat-input-area, #chat-input-area {
+        flex: 0 0 auto !important;
+        margin-bottom: 5px !important; /* Dá um mini respiro para não colar 100% na barra */
+      }
+
+      /* Barra de rolagem mais bonita */
+      #chat-mensagens::-webkit-scrollbar { width: 6px; }
+      #chat-mensagens::-webkit-scrollbar-track { background: transparent; }
+      #chat-mensagens::-webkit-scrollbar-thumb { background: #555555; border-radius: 10px; }
+      #chat-mensagens::-webkit-scrollbar-thumb:hover { background: #777777; }
+    `;
+    document.head.appendChild(estiloCss);
+  }
+}
+
+async function testarConexaoGemini() {
+  configurarLayoutChat();
+
+  if (CHAVE_LOCAL_TESTE === 'COLE_AQUI_SUA_CHAVE_DO_GOOGLE') {
+    setStatusChat('⚠️ Coloque a chave no código!', false);
+  } else {
+    setStatusChat('● Online', false); 
+  }
+}
+
+document.addEventListener('DOMContentLoaded', testarConexaoGemini);
 
 /* ─────────────────────────────────────────
    ENVIAR MENSAGEM
@@ -1715,101 +2250,15 @@ async function enviarMensagem() {
 
   try {
     const resposta = await chamarGemini(texto);
-    digitando.remove();
+    if (digitando.parentNode) digitando.remove(); 
     adicionarMensagem(resposta, 'bot');
   } catch (erro) {
-    digitando.remove();
-    console.error('[Gemini] Erro:', erro.message);
+    if (digitando.parentNode) digitando.remove();
     adicionarMensagem(obterMsgErro(erro), 'bot');
   } finally {
     if (btnEnviar) btnEnviar.disabled = false;
     setStatusChat('● Online', false);
   }
-}
-
-/* ─────────────────────────────────────────
-   CHAMAR API GEMINI — sem erro 400
-───────────────────────────────────────── */
-async function chamarGemini(pergunta) {
-
-  /* ✅ Monta o conteúdo com histórico anterior + nova pergunta
-     Garante que começa sempre com 'user' e alterna corretamente */
-  const contents = [
-    ...historicoChat,          // pares anteriores (user+model)
-    { role: 'user', parts: [{ text: pergunta }] }  // nova pergunta
-  ];
-
-  const body = {
-    system_instruction: {
-      parts: [{ text: SYSTEM_PROMPT }]
-    },
-    contents,
-    generationConfig: {
-      temperature:     0.7,
-      maxOutputTokens: 600,
-      topP:            0.9,
-    }
-  };
-
-  /* AbortController manual — compatível com todos os browsers */
-  const controller = new AbortController();
-  const timeoutId  = setTimeout(() => controller.abort(), 20000);
-
-  let resp;
-  try {
-    resp = await fetch(GEMINI_URL, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(body),
-      signal:  controller.signal
-    });
-  } finally {
-    clearTimeout(timeoutId);
-  }
-
-  /* Loga o erro HTTP real para debug */
-  if (!resp.ok) {
-    let detalhes = '';
-    try {
-      const errJson = await resp.json();
-      detalhes = errJson?.error?.message || JSON.stringify(errJson?.error || errJson);
-    } catch (_) {
-      detalhes = await resp.text().catch(() => '');
-    }
-    console.error(`[Gemini] HTTP ${resp.status}:`, detalhes);
-    throw new Error(`HTTP_${resp.status}::${detalhes}`);
-  }
-
-  const data  = await resp.json();
-  const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!texto) {
-    /* Pode ser bloqueio de segurança — loga o motivo */
-    const motivo = data?.candidates?.[0]?.finishReason
-                || data?.promptFeedback?.blockReason
-                || 'desconhecido';
-    console.warn('[Gemini] Resposta vazia. Motivo:', motivo, JSON.stringify(data));
-    throw new Error(`RESPOSTA_VAZIA::${motivo}`);
-  }
-
-  /* ✅ Só salva no histórico DEPOIS de receber resposta com sucesso
-     Evita histórico corrompido em caso de erro */
-  historicoChat.push(
-    { role: 'user',  parts: [{ text: pergunta }] },
-    { role: 'model', parts: [{ text: texto    }] }
-  );
-
-  /* ✅ Mantém apenas os últimos 5 pares (10 mensagens)
-     e garante que sempre começa com 'user' */
-  if (historicoChat.length > 10) {
-    historicoChat = historicoChat.slice(-10);
-    /* Garante que o primeiro item é sempre 'user' */
-    if (historicoChat[0]?.role !== 'user') {
-      historicoChat = historicoChat.slice(1);
-    }
-  }
-
-  return texto;
 }
 
 /* ─────────────────────────────────────────
@@ -1821,33 +2270,18 @@ function obterMsgErro(erro) {
   if (msg.includes('abort') || msg.toLowerCase().includes('aborterror')) {
     return '⏱️ A resposta demorou muito. Verifique sua conexão e tente novamente.';
   }
-  if (msg.includes('HTTP_400')) {
-    return '❌ Erro na requisição (400). Recarregue a página e tente novamente.';
-  }
-  if (msg.includes('HTTP_401') || msg.includes('HTTP_403')) {
-    return '🔑 Chave de API inválida. Verifique em aistudio.google.com.';
-  }
-  if (msg.includes('HTTP_429')) {
-    return '⏳ Muitas requisições. Aguarde alguns segundos e tente novamente.';
-  }
-  if (msg.includes('HTTP_5')) {
-    return '🔧 Serviço do Google indisponível no momento. Tente em alguns instantes.';
-  }
-  if (msg.includes('SAFETY')) {
-    return '🚫 Mensagem bloqueada por segurança. Tente reformular sua pergunta.';
-  }
-  if (msg.includes('RESPOSTA_VAZIA')) {
-    return '🤔 Não obtive resposta. Tente reformular sua pergunta.';
-  }
+  if (msg.includes('HTTP_400')) return '❌ Erro na requisição. Tente novamente.';
+  if (msg.includes('HTTP_403') || msg.includes('API_KEY_INVALID')) return '🔑 Chave de API inválida.';
+  if (msg.includes('HTTP_429')) return '⏳ Muitas requisições ao mesmo tempo. Aguarde um pouco.';
+  if (msg.includes('HTTP_5')) return '🔧 O serviço da IA está indisponível no momento.';
   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-    return '📡 Sem conexão com a internet.\n\nEmergências: Defesa Civil **(81) 3469-5701**';
+    return '📡 Sem conexão com a internet.\nEmergências: Defesa Civil **(81) 3469-5701**';
   }
-
-  return '⚠️ Erro inesperado. Abra o console (F12) para ver o detalhe.\n\nAjuda imediata: **(81) 3469-5701**';
+  return '⚠️ Erro inesperado.\nAjuda imediata: **(81) 3469-5701**';
 }
 
 /* ─────────────────────────────────────────
-   PERGUNTA RÁPIDA
+   PERGUNTA RÁPIDA, UI E UTILITÁRIOS
 ───────────────────────────────────────── */
 function perguntaRapida(texto) {
   const input = document.getElementById('chat-input');
@@ -1855,15 +2289,13 @@ function perguntaRapida(texto) {
   enviarMensagem();
 }
 
-/* ─────────────────────────────────────────
-   ADICIONAR MENSAGEM NO CHAT
-───────────────────────────────────────── */
 function adicionarMensagem(texto, tipo) {
   const container = document.getElementById('chat-mensagens');
   if (!container) return;
 
   const div = document.createElement('div');
   div.className = `msg ${tipo}`;
+  div.style.wordBreak = 'break-word';
 
   const html = texto
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1876,16 +2308,14 @@ function adicionarMensagem(texto, tipo) {
   `;
 
   container.appendChild(div);
-  requestAnimationFrame(() => {
-    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-  });
+  
+  setTimeout(() => {
+    container.scrollTop = container.scrollHeight;
+  }, 50);
 
   if (tipo === 'bot') notificarBadgeChat();
 }
 
-/* ─────────────────────────────────────────
-   ANIMAÇÃO "DIGITANDO"
-───────────────────────────────────────── */
 function mostrarDigitando() {
   const container = document.getElementById('chat-mensagens');
   if (!container) return { remove: () => {} };
@@ -1903,9 +2333,6 @@ function mostrarDigitando() {
   return div;
 }
 
-/* ─────────────────────────────────────────
-   UTILITÁRIOS
-───────────────────────────────────────── */
 function ocultarPerguntasRapidas() {
   const el = document.getElementById('chat-rapidas');
   if (el) el.style.display = 'none';
@@ -1933,90 +2360,11 @@ function autoResize(el) {
 
 function notificarBadgeChat() {
   const viewChat = document.getElementById('view-chat');
-  const oculto   = !viewChat
-                || viewChat.style.display === 'none'
-                || viewChat.style.display === '';
+  const oculto   = !viewChat || viewChat.style.display === 'none' || viewChat.style.display === '';
   if (oculto) {
     document.getElementById('nav-chat')?.classList.add('has-badge');
   }
 }
-
-/* ─────────────────────────────────────────
-   TESTE DE CONEXÃO ao carregar a página
-───────────────────────────────────────── */
-async function testarConexaoGemini() {
-  try {
-    const controller = new AbortController();
-    setTimeout(() => controller.abort(), 5000);
-
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`,
-      { signal: controller.signal }
-    );
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      console.warn(`[Gemini] Teste falhou HTTP ${resp.status}:`, err?.error?.message);
-      setStatusChat('⚠️ API indisponível', false);
-    } else {
-      console.info('[Gemini] ✅ Conexão OK — pronto para uso');
-    }
-  } catch (e) {
-    console.warn('[Gemini] Sem conexão:', e.message);
-    setStatusChat('📡 Sem conexão', false);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', testarConexaoGemini);
-
-async function enviarPergunta(prompt) {
-  const response = await fetch("/.netlify/functions/gemini", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ prompt }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    console.error(data);
-    alert(data.error || "Erro ao consultar a API");
-    return;
-  }
-
-  console.log(data.text);
-  return data.text;
-}
-
-document.getElementById("enviar").addEventListener("click", async () => {
-  const prompt = document.getElementById("prompt").value;
-  const respostaDiv = document.getElementById("resposta");
-
-  respostaDiv.innerText = "Carregando...";
-
-  const response = await fetch("/.netlify/functions/gemini", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ prompt }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    respostaDiv.innerText = data.error || "Erro";
-    return;
-  }
-
-  respostaDiv.innerText = data.text;
-});
-
-
-
-
 
 
 
