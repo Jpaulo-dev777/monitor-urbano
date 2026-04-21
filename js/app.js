@@ -1571,8 +1571,103 @@ const _origOpenRelatar = openRelatar;
    ASSISTENTE IA — Gemini 2.0 Flash (correção do erro 400)
    ============================================================ */
 
-const GEMINI_API_KEY = 'AIzaSyBJRU7QlfWmPx-Cy06k0PiJ1T2f0sa5z40';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+// ❌ REMOVA ESSAS DUAS LINHAS
+// const GEMINI_API_KEY = 'AIzaSy...';
+// const GEMINI_URL = `https://generativelanguage...`;
+
+
+// ✅ NOVA função chamarGemini — chama seu backend /api/gemini
+async function chamarGemini(pergunta) {
+
+  const contents = [
+    ...historicoChat,
+    { role: 'user', parts: [{ text: pergunta }] }
+  ];
+
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 20000);
+
+  let resp;
+  try {
+    resp = await fetch('/api/gemini', {        // ← chama sua API Route
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages:     contents,
+        systemPrompt: SYSTEM_PROMPT
+      }),
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  if (!resp.ok) {
+    let detalhes = '';
+    try {
+      const errJson = await resp.json();
+      detalhes = errJson?.error || `HTTP ${resp.status}`;
+    } catch (_) {
+      detalhes = await resp.text().catch(() => '');
+    }
+    console.error(`[Gemini] HTTP ${resp.status}:`, detalhes);
+    throw new Error(`HTTP_${resp.status}::${detalhes}`);
+  }
+
+  const data  = await resp.json();
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  const texto = data.text;
+
+  // Salva no histórico após sucesso
+  historicoChat.push(
+    { role: 'user',  parts: [{ text: pergunta }] },
+    { role: 'model', parts: [{ text: texto    }] }
+  );
+
+  // Mantém só os últimos 5 pares
+  if (historicoChat.length > 10) {
+    historicoChat = historicoChat.slice(-10);
+    if (historicoChat[0]?.role !== 'user') {
+      historicoChat = historicoChat.slice(1);
+    }
+  }
+
+  return texto;
+}
+
+
+// ✅ NOVA função testarConexaoGemini — testa via backend
+async function testarConexaoGemini() {
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 5000);
+
+    const resp = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', parts: [{ text: 'ping' }] }],
+        systemPrompt: 'Responda apenas: pong'
+      }),
+      signal: controller.signal
+    });
+
+    if (resp.ok) {
+      console.info('[Gemini] ✅ Conexão OK — pronto para uso');
+    } else {
+      console.warn('[Gemini] ⚠️ API retornou:', resp.status);
+      setStatusChat('⚠️ API indisponível', false);
+    }
+  } catch (e) {
+    console.warn('[Gemini] Sem conexão:', e.message);
+    setStatusChat('📡 Sem conexão', false);
+  }
+}
 
 const SYSTEM_PROMPT = `Você é o Assistente de Monitoramento Urbano de Jaboatão dos Guararapes - PE, Brasil.
 Seu foco exclusivo é: clima, prevenção de desastres, alagamentos, deslizamentos e emergências urbanas.
