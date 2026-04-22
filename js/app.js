@@ -936,55 +936,52 @@ let historicoChat = [];
  
 
 /* ─────────────────────────────────────────
-   CHAMAR API GEMINI
+   CHAMAR API GEMINI (AGORA VIA VERCEL BACKEND)
 ───────────────────────────────────────── */
 async function chamarGemini(pergunta) {
-  const contents = [
-    ...historicoChat,
-    { role: 'user', parts: [{ text: pergunta }] }
-  ];
-
-  const body = {
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-    contents,
-    generationConfig: { temperature: 0.7, maxOutputTokens: 600, topP: 0.9 }
-  };
+  // 1. Adiciona a pergunta do usuário no histórico
+  historicoChat.push({ role: 'user', parts: [{ text: pergunta }] });
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 20000); 
 
   let resp;
   try {
-    resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${CHAVE_LOCAL_TESTE}`, {
+    // 2. Chama o seu backend no Vercel (e NÃO mais o Google direto)
+    resp = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        messages: historicoChat,
+        systemPrompt: SYSTEM_PROMPT
+      }),
       signal: controller.signal
     });
-  } finally {
+  } catch (erro) {
     clearTimeout(timeoutId);
+    throw new Error('Falha na conexão com o servidor.');
   }
 
+  clearTimeout(timeoutId);
+
+  // 3. Trata erros caso o Vercel ou o Google reclamem
   if (!resp.ok) {
-    let detalhes = '';
+    let errorMsg = `HTTP ${resp.status}`;
     try {
-      const errJson = await resp.json();
-      detalhes = errJson?.error?.message || `HTTP ${resp.status}`;
-    } catch (_) {
-      detalhes = await resp.text().catch(() => '');
-    }
-    throw new Error(`HTTP_${resp.status}::${detalhes}`);
+      const errorData = await resp.json();
+      errorMsg = errorData.error || errorMsg;
+    } catch(e) {}
+    throw new Error(errorMsg);
   }
   
+  // 4. Pega a resposta limpa que o backend mandou
   const data = await resp.json();
-  const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  const texto = data.text;
 
   if (!texto) throw new Error('Resposta vazia');
 
-  historicoChat.push(
-    { role: 'user', parts: [{ text: pergunta }] },
-    { role: 'model', parts: [{ text: texto }] }
-  );
+  // 5. Salva a resposta no histórico e mantém no máximo 10 mensagens
+  historicoChat.push({ role: 'model', parts: [{ text: texto }] });
 
   if (historicoChat.length > 10) {
     historicoChat = historicoChat.slice(-10);
@@ -993,6 +990,51 @@ async function chamarGemini(pergunta) {
 
   return texto;
 }
+
+/* ─────────────────────────────────────────
+   ESTILOS: O SEGREDO DO LAYOUT PERFEITO
+───────────────────────────────────────── */
+function configurarLayoutChat() {
+  if (!document.getElementById('estilo-layout-chat')) {
+    const estiloCss = document.createElement('style');
+    estiloCss.id = 'estilo-layout-chat';
+    estiloCss.innerHTML = `
+      /* TRUQUE NINJA: Aplica o Flexbox APENAS se o app não estiver tentando esconder a aba */
+      #view-chat:not([style*="display: none"]):not([style*="display:none"]) {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+      }
+
+      #view-chat {
+        box-sizing: border-box !important;
+        padding-bottom: 75px !important; 
+      }
+
+      #chat-mensagens {
+        flex: 1 1 auto !important;
+        height: 0px !important; 
+        max-height: none !important; 
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding-right: 5px !important;
+      }
+      
+      #chat-rapidas, .chat-input-area, #chat-input-area {
+        flex: 0 0 auto !important;
+        margin-bottom: 5px !important;
+      }
+
+      #chat-mensagens::-webkit-scrollbar { width: 6px; }
+      #chat-mensagens::-webkit-scrollbar-track { background: transparent; }
+      #chat-mensagens::-webkit-scrollbar-thumb { background: #555555; border-radius: 10px; }
+      #chat-mensagens::-webkit-scrollbar-thumb:hover { background: #777777; }
+    `;
+    document.head.appendChild(estiloCss);
+  }
+}
+
+
 
 /* ─────────────────────────────────────────
    ESTILOS: O SEGREDO DO LAYOUT PERFEITO
