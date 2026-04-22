@@ -919,52 +919,39 @@ REGRAS:
 
 let historicoChat = [];
 
-async function chamarGemini(pergunta) {
-  historicoChat.push({ role: 'user', parts: [{ text: pergunta }] });
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000); 
-
-  let resp;
+/* ─────────────────────────────────────────
+   COMUNICAÇÃO COM O BACKEND (VERCEL)
+───────────────────────────────────────── */
+async function chamarGemini(textoDoUsuario) {
   try {
-    resp = await fetch('/api/gemini', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    // Faz a chamada POST para a sua pasta api/gemini no Vercel
+    const response = await fetch('/api/gemini', {
+      method: 'POST', // Aqui está o POST que o Vercel exige!
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        messages: historicoChat,
-        systemPrompt: SYSTEM_PROMPT
-      }),
-      signal: controller.signal
+        messages: [
+          { role: "user", parts: [{ text: textoDoUsuario }] }
+        ]
+      })
     });
-  } catch (erro) {
-    clearTimeout(timeoutId);
-    throw new Error('Falha na conexão com o servidor.');
+
+    // Transforma a resposta do Vercel em um objeto JavaScript
+    const data = await response.json();
+
+    // Se deu algum erro lá no Vercel, joga o erro para a tela
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro na comunicação com o servidor.');
+    }
+
+    // Se deu tudo certo, retorna apenas o texto da resposta da IA
+    return data.text; 
+
+  } catch (error) {
+    console.error("Erro na API:", error);
+    throw error; // Repassa o erro para a função enviarMensagem mostrar na tela
   }
-
-  clearTimeout(timeoutId);
-
-  if (!resp.ok) {
-    let errorMsg = `HTTP ${resp.status}`;
-    try {
-      const errorData = await resp.json();
-      errorMsg = errorData.error || errorMsg;
-    } catch(e) {}
-    throw new Error(errorMsg);
-  }
-  
-  const data = await resp.json();
-  const texto = data.text;
-
-  if (!texto) throw new Error('Resposta vazia');
-
-  historicoChat.push({ role: 'model', parts: [{ text: texto }] });
-
-  if (historicoChat.length > 10) {
-    historicoChat = historicoChat.slice(-10);
-    if (historicoChat[0]?.role !== 'user') historicoChat = historicoChat.slice(1);
-  }
-
-  return texto;
 }
 
 /* ─────────────────────────────────────────
