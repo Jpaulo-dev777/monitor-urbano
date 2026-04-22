@@ -929,15 +929,15 @@ async function chamarGemini(textoDoUsuario) {
       headers: {
         'Content-Type': 'application/json'
       },
-      // Vamos mandar apenas o texto de forma simples e direta:
-      body: JSON.stringify({ texto: textoDoUsuario }) 
+      body: JSON.stringify({ texto: textoDoUsuario })
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Detalhes do erro do servidor:", data);
-      throw new Error(data.error || 'Erro na comunicação com o servidor.');
+      // Aqui pegamos o motivo REAL do erro para mostrar no console
+      const motivo = data.detalhes ? JSON.stringify(data.detalhes) : data.error;
+      throw new Error(`Erro retornado pelo servidor: ${motivo}`);
     }
 
     return data.text; 
