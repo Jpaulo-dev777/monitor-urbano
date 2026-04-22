@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     }
 
     // 3. Comunicação com a API do Google (Usando Gemini 1.5 Flash)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
     // FORMATO EXATO QUE O GOOGLE EXIGE:
     const payload = {
