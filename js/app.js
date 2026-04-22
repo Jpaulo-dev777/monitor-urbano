@@ -420,7 +420,7 @@ function renderZonasRisco(mapaInst) {
 }
 
 /* ============================================================
-   NAVEGAÇÃO — UNIFICADA E CORRIGIDA (SEM ERRO DE NAV_IDS)
+   NAVEGAÇÃO — UNIFICADA E CORRIGIDA
    ============================================================ */
 const VIEWS = ['view-home', 'view-lista', 'view-mapa', 'view-mapa-full', 'view-chat'];
 
@@ -433,7 +433,6 @@ const NAV_MAP = {
 };
 
 function goTo(viewId) {
-  // 1. Esconde todas as telas
   VIEWS.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
@@ -442,14 +441,11 @@ function goTo(viewId) {
     }
   });
 
-  // 2. Remove "active" de todos os botões do menu inferior
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-  // 3. Mostra a tela que o usuário clicou
   const target = document.getElementById(viewId);
   if (!target) return;
 
-  // Lógica específica para Mapas e Chat
   if (viewId === 'view-mapa' || viewId === 'view-mapa-full') {
     target.style.display = 'block';
     target.classList.add('open');
@@ -459,21 +455,19 @@ function goTo(viewId) {
       document.getElementById('fullMapCount').textContent = dados.length;
     }
   } else if (viewId === 'view-chat') {
-    target.style.display = 'flex'; // O chat precisa de flexbox
+    target.style.display = 'flex'; 
     setTimeout(() => document.getElementById('chat-input')?.focus(), 300);
     document.getElementById('nav-chat')?.classList.remove('has-badge');
   } else {
     target.style.display = 'block';
   }
 
-  // 4. Pinta o botão correto no menu inferior
   const navId = NAV_MAP[viewId];
   if (navId) {
     const navEl = document.getElementById(navId);
     if (navEl) navEl.classList.add('active');
   }
 
-  // 5. Ajuste do mapa para não bugar ao trocar de aba
   if (viewId === 'view-mapa' && window.mapa) {
     setTimeout(() => window.mapa.invalidateSize(), 100);
   }
@@ -482,7 +476,6 @@ function goTo(viewId) {
   }
 }
 
-/* ── Recentes dropdown ── */
 let recentesAberto = false;
 function toggleRecentes() {
   recentesAberto = !recentesAberto;
@@ -554,8 +547,6 @@ function atualizarLegendaChart(contagem) {
    SISTEMA DE GEOCODING + CEP
    ============================================================ */
 const CIDADE_PADRAO   = 'Jaboatão dos Guararapes';
-const ESTADO_PADRAO   = 'PE';
-const PAIS_PADRAO     = 'Brasil';
 const LAT_CENTRO = -8.1128;
 const LNG_CENTRO = -34.9092;
 
@@ -667,7 +658,6 @@ async function obterCoordenadasEndereco(enderecoRaw) {
   if (input && input.dataset.lat) {
       return { lat: parseFloat(input.dataset.lat), lng: parseFloat(input.dataset.lng), cep: input.dataset.cep || null, precisao: 'exata' };
   }
-  // Fallback se não usar o autocomplete
   return { lat: LAT_CENTRO, lng: LNG_CENTRO, cep: null, precisao: 'fallback' };
 }
 
@@ -827,7 +817,7 @@ function confirmarDelete() {
 }
 
 /* ============================================================
-   TOAST, RELÓGIO & INICIALIZAÇÃO
+   TOAST E RELÓGIO
    ============================================================ */
 function toast(msg) {
   const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
@@ -840,7 +830,6 @@ function atualizarRelogio() {
 }
 setInterval(atualizarRelogio, 30000); atualizarRelogio();
 
-renderLista(dados, 'listaHome'); renderLista(dados, 'listaTodas'); renderChart();
 function atualizarContadores() {
   const n = dados.length;
   document.getElementById('alertCount').innerHTML = `<span>🔔 </span>${n} Alertas`;
@@ -852,7 +841,6 @@ function atualizarContadores() {
   if (document.getElementById('kpiResolvido')) document.getElementById('kpiResolvido').textContent  = dados.filter(o => o.status === 'Resolvido').length;
   if (document.getElementById('kpiAtend')) document.getElementById('kpiAtend').textContent      = dados.filter(o => o.status === 'Em atendimento').length;
 }
-atualizarIconeTema();
 
 /* ============================================================
    ROTA ATÉ A OCORRÊNCIA
@@ -910,7 +898,7 @@ window.copiarCoordenadas = function(idx) {
 };
 
 /* ============================================================
-   ASSISTENTE IA — TESTE LOCAL (APP FUNCIONANDO NORMALMENTE)
+   ASSISTENTE IA — VIA VERCEL BACKEND
    ============================================================ */
 
 const SYSTEM_PROMPT = `Você é o Assistente de Monitoramento Urbano de Jaboatão dos Guararapes - PE, Brasil.
@@ -927,19 +915,11 @@ REGRAS:
 - Respostas curtas e objetivas (máx. 200 palavras, exceto quando pedir detalhes)
 - Use emojis com moderação para facilitar leitura
 - Nunca responda sobre assuntos fora do escopo (política, entretenimento, etc.)
-- Contexto: Jaboatão dos Guararapes fica na Região Metropolitana do Recife,
-  área sujeita a chuvas intensas especialmente de março a agosto`;
+- Contexto: Jaboatão dos Guararapes fica na Região Metropolitana do Recife, área sujeita a chuvas intensas especialmente de março a agosto`;
 
 let historicoChat = [];
 
-// ⚠️ ATENÇÃO: COLOQUE SUA CHAVE AQUI APENAS PARA TESTAR NO LIVE SERVER!
- 
-
-/* ─────────────────────────────────────────
-   CHAMAR API GEMINI (AGORA VIA VERCEL BACKEND)
-───────────────────────────────────────── */
 async function chamarGemini(pergunta) {
-  // 1. Adiciona a pergunta do usuário no histórico
   historicoChat.push({ role: 'user', parts: [{ text: pergunta }] });
 
   const controller = new AbortController();
@@ -947,7 +927,6 @@ async function chamarGemini(pergunta) {
 
   let resp;
   try {
-    // 2. Chama o seu backend no Vercel (e NÃO mais o Google direto)
     resp = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -964,7 +943,6 @@ async function chamarGemini(pergunta) {
 
   clearTimeout(timeoutId);
 
-  // 3. Trata erros caso o Vercel ou o Google reclamem
   if (!resp.ok) {
     let errorMsg = `HTTP ${resp.status}`;
     try {
@@ -974,13 +952,11 @@ async function chamarGemini(pergunta) {
     throw new Error(errorMsg);
   }
   
-  // 4. Pega a resposta limpa que o backend mandou
   const data = await resp.json();
   const texto = data.text;
 
   if (!texto) throw new Error('Resposta vazia');
 
-  // 5. Salva a resposta no histórico e mantém no máximo 10 mensagens
   historicoChat.push({ role: 'model', parts: [{ text: texto }] });
 
   if (historicoChat.length > 10) {
@@ -999,18 +975,15 @@ function configurarLayoutChat() {
     const estiloCss = document.createElement('style');
     estiloCss.id = 'estilo-layout-chat';
     estiloCss.innerHTML = `
-      /* TRUQUE NINJA: Aplica o Flexbox APENAS se o app não estiver tentando esconder a aba */
       #view-chat:not([style*="display: none"]):not([style*="display:none"]) {
         display: flex !important;
         flex-direction: column !important;
         height: 100% !important;
       }
-
       #view-chat {
         box-sizing: border-box !important;
         padding-bottom: 75px !important; 
       }
-
       #chat-mensagens {
         flex: 1 1 auto !important;
         height: 0px !important; 
@@ -1019,57 +992,10 @@ function configurarLayoutChat() {
         overflow-x: hidden !important;
         padding-right: 5px !important;
       }
-      
       #chat-rapidas, .chat-input-area, #chat-input-area {
         flex: 0 0 auto !important;
         margin-bottom: 5px !important;
       }
-
-      #chat-mensagens::-webkit-scrollbar { width: 6px; }
-      #chat-mensagens::-webkit-scrollbar-track { background: transparent; }
-      #chat-mensagens::-webkit-scrollbar-thumb { background: #555555; border-radius: 10px; }
-      #chat-mensagens::-webkit-scrollbar-thumb:hover { background: #777777; }
-    `;
-    document.head.appendChild(estiloCss);
-  }
-}
-
-
-
-/* ─────────────────────────────────────────
-   ESTILOS: O SEGREDO DO LAYOUT PERFEITO
-───────────────────────────────────────── */
-function configurarLayoutChat() {
-  if (!document.getElementById('estilo-layout-chat')) {
-    const estiloCss = document.createElement('style');
-    estiloCss.id = 'estilo-layout-chat';
-    estiloCss.innerHTML = `
-      /* TRUQUE NINJA: Aplica o Flexbox APENAS se o app não estiver tentando esconder a aba */
-      #view-chat:not([style*="display: none"]):not([style*="display:none"]) {
-        display: flex !important;
-        flex-direction: column !important;
-        height: 100% !important;
-      }
-
-      #view-chat {
-        box-sizing: border-box !important;
-        padding-bottom: 75px !important; 
-      }
-
-      #chat-mensagens {
-        flex: 1 1 auto !important;
-        height: 0px !important; 
-        max-height: none !important; 
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        padding-right: 5px !important;
-      }
-      
-      #chat-rapidas, .chat-input-area, #chat-input-area {
-        flex: 0 0 auto !important;
-        margin-bottom: 5px !important;
-      }
-
       #chat-mensagens::-webkit-scrollbar { width: 6px; }
       #chat-mensagens::-webkit-scrollbar-track { background: transparent; }
       #chat-mensagens::-webkit-scrollbar-thumb { background: #555555; border-radius: 10px; }
@@ -1081,18 +1007,11 @@ function configurarLayoutChat() {
 
 async function testarConexaoGemini() {
   configurarLayoutChat();
-
-  if (CHAVE_LOCAL_TESTE === 'COLE_AQUI_SUA_CHAVE_DO_GOOGLE') {
-    setStatusChat('⚠️ Coloque a chave no código!', false);
-  } else {
-    setStatusChat('● Online', false); 
-  }
+  setStatusChat('● Online', false); 
 }
 
-document.addEventListener('DOMContentLoaded', testarConexaoGemini);
-
 /* ─────────────────────────────────────────
-   ENVIAR MENSAGEM
+   ENVIAR MENSAGEM E UI DO CHAT
 ───────────────────────────────────────── */
 async function enviarMensagem() {
   const input = document.getElementById('chat-input');
@@ -1125,28 +1044,21 @@ async function enviarMensagem() {
   }
 }
 
-/* ─────────────────────────────────────────
-   MENSAGEM DE ERRO AMIGÁVEL
-───────────────────────────────────────── */
 function obterMsgErro(erro) {
   const msg = erro?.message || '';
-
   if (msg.includes('abort') || msg.toLowerCase().includes('aborterror')) {
     return '⏱️ A resposta demorou muito. Verifique sua conexão e tente novamente.';
   }
   if (msg.includes('HTTP_400')) return '❌ Erro na requisição. Tente novamente.';
-  if (msg.includes('HTTP_403') || msg.includes('API_KEY_INVALID')) return '🔑 Chave de API inválida.';
-  if (msg.includes('HTTP_429')) return '⏳ Muitas requisições ao mesmo tempo. Aguarde alguns minutos e tente falar comigo de novo.';
-  if (msg.includes('HTTP_5')) return '🔧 O serviço da IA está indisponível no momento.';
+  if (msg.includes('HTTP_403') || msg.includes('API_KEY_INVALID') || msg.includes('API key')) return '🔑 Chave de API inválida no servidor.';
+  if (msg.includes('HTTP_429')) return '⏳ Muitas requisições ao mesmo tempo. Aguarde alguns minutos.';
+  if (msg.includes('HTTP_5') || msg.includes('Falha na conexão')) return '🔧 O serviço da IA está indisponível no momento (Erro no Servidor).';
   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
     return '📡 Sem conexão com a internet.\nEmergências: Defesa Civil **(81) 3469-5701**';
   }
-  return '⚠️ Erro inesperado.\nAjuda imediata: **(81) 3469-5701**';
+  return '⚠️ Erro inesperado. (' + msg + ')\nAjuda imediata: **(81) 3469-5701**';
 }
 
-/* ─────────────────────────────────────────
-   PERGUNTA RÁPIDA, UI E UTILITÁRIOS
-───────────────────────────────────────── */
 function perguntaRapida(texto) {
   const input = document.getElementById('chat-input');
   if (input) { input.value = texto; autoResize(input); }
@@ -1230,7 +1142,8 @@ function notificarBadgeChat() {
   }
 }
 
-// Inicia as telas do App
+// INICIALIZAÇÃO DO APP
 document.addEventListener('DOMContentLoaded', () => {
     syncTudo();
+    testarConexaoGemini();
 });
