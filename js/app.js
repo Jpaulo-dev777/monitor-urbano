@@ -924,33 +924,27 @@ let historicoChat = [];
 ───────────────────────────────────────── */
 async function chamarGemini(textoDoUsuario) {
   try {
-    // Faz a chamada POST para a sua pasta api/gemini no Vercel
     const response = await fetch('/api/gemini', {
-      method: 'POST', // Aqui está o POST que o Vercel exige!
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        messages: [
-          { role: "user", parts: [{ text: textoDoUsuario }] }
-        ]
-      })
+      // Vamos mandar apenas o texto de forma simples e direta:
+      body: JSON.stringify({ texto: textoDoUsuario }) 
     });
 
-    // Transforma a resposta do Vercel em um objeto JavaScript
     const data = await response.json();
 
-    // Se deu algum erro lá no Vercel, joga o erro para a tela
     if (!response.ok) {
+      console.error("Detalhes do erro do servidor:", data);
       throw new Error(data.error || 'Erro na comunicação com o servidor.');
     }
 
-    // Se deu tudo certo, retorna apenas o texto da resposta da IA
     return data.text; 
 
   } catch (error) {
     console.error("Erro na API:", error);
-    throw error; // Repassa o erro para a função enviarMensagem mostrar na tela
+    throw error;
   }
 }
 
