@@ -1,61 +1,51 @@
-// api/gemini.js — Roda no servidor Vercel, chave NUNCA vai ao browser
+/* ─────────────────────────────────────────
+   CHAMAR API GEMINI (VIA VERCEL BACKEND)
+───────────────────────────────────────── */
+async function chamarGemini(pergunta) {
+  // Adiciona a pergunta do usuário no histórico
+  historicoChat.push({ role: 'user', parts: [{ text: pergunta }] });
 
-export default async function handler(req, res) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000); 
 
-  // Apenas POST permitido
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método não permitido' });
-  }
-
-  const { messages, systemPrompt } = req.body;
-
-  // Pega a chave do ambiente (nunca exposta ao cliente)
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    return res.status(500).json({ error: 'Chave API não configurada no servidor' });
-  }
-
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
+  let resp;
   try {
-    const response = await fetch(GEMINI_URL, {
+    // ⚠️ AQUI ESTÁ A MÁGICA: Agora chamamos o seu próprio servidor Vercel!
+    resp = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: systemPrompt }]
-        },
-        contents: messages,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 600,
-          topP: 0.9,
-        }
-      })
+        messages: historicoChat,
+        systemPrompt: SYSTEM_PROMPT
+      }),
+      signal: controller.signal
     });
-
-    if (!response.ok) {
-      const erro = await response.json().catch(() => ({}));
-      const msg = erro?.error?.message || `HTTP ${response.status}`;
-      console.error('[Gemini API]', msg);
-      return res.status(response.status).json({ error: msg });
-    }
-
-    const data = await response.json();
-    const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!texto) {
-      const motivo = data?.candidates?.[0]?.finishReason
-                  || data?.promptFeedback?.blockReason
-                  || 'desconhecido';
-      return res.status(200).json({ error: `RESPOSTA_VAZIA::${motivo}` });
-    }
-
-    return res.status(200).json({ text: texto });
-
-  } catch (err) {
-    console.error('[Gemini] Erro interno:', err.message);
-    return res.status(500).json({ error: err.message });
+  } catch (erro) {
+    clearTimeout(timeoutId);
+    throw new Error('Falha na conexão com o servidor.');
   }
+
+  clearTimeout(timeoutId);
+
+  // Tratamento de erro caso o Vercel devolva problema
+  if (!resp.ok) {
+    const errorData = await resp.json().catch(() => ({}));
+    throw new Error(`Erro: ${errorData.error || resp.statusText}`);
+  }
+  
+  const data = await resp.json();
+  const texto = data.text; // O backend devolve apenas { text: "..." }
+
+  if (!texto) throw new Error('Resposta vazia');
+
+  // Adiciona a resposta da IA no histórico
+  historicoChat.push({ role: 'model', parts: [{ text: texto }] });
+
+  // Mantém apenas as últimas 10 mensagens na memória
+  if (historicoChat.length > 10) {
+    historicoChat = historicoChat.slice(-10);
+    if (historicoChat[0]?.role !== 'user') historicoChat = historicoChat.slice(1);
+  }
+
+  return texto;
 }
