@@ -61,28 +61,35 @@
     </div>
     <div class="alert-count" id="alertCount"><span>🔔 </span>12 Alertas</div>
 
-    <div class="kpi-strip">
-      <div class="kpi-card kpi-red">
+        <!-- Estilo para esconder a barra de rolagem (ficar bonito igual app nativo) -->
+    <style>
+      .kpi-strip-scroll::-webkit-scrollbar { display: none; }
+    </style>
+
+    <div class="kpi-strip kpi-strip-scroll" style="display: flex; overflow-x: auto; gap: 12px; padding-bottom: 5px; scrollbar-width: none;">
+      
+      <!-- CARD 1 -->
+      <div class="kpi-card kpi-red" style="flex: 0 0 auto; width: 115px;">
         <span class="kpi-val" id="kpiAlta">5</span>
         <span class="kpi-lbl">Urgência Alta</span>
         <span class="kpi-chg kpi-up">↑ 2 hoje</span>
       </div>
-      <div class="kpi-card kpi-green">
+
+      <!-- CARD 2 -->
+      <div class="kpi-card kpi-green" style="flex: 0 0 auto; width: 115px;">
         <span class="kpi-val" id="kpiResolvido">1</span>
         <span class="kpi-lbl">Resolvidos</span>
         <span class="kpi-chg kpi-down">↓ resolvidos</span>
       </div>
-      <div class="kpi-card kpi-orange">
+
+      <!-- CARD 3 -->
+      <div class="kpi-card kpi-orange" style="flex: 0 0 auto; width: 115px;">
         <span class="kpi-val" id="kpiAtend">2</span>
         <span class="kpi-lbl">Em Atend.</span>
         <span class="kpi-chg kpi-up">↑ ativos</span>
       </div>
-            <div class="kpi-card kpi-orange">
-        <span class="kpi-val" id="kpiAtend">2</span>
-        <span class="kpi-lbl">Em Atend.</span>
-        <span class="kpi-chg kpi-up">↑ ativos</span>
-      </div>
-    </div> <!-- Este fechamento é muito importante! -->
+
+    </div> <!-- Fim dos KPIs -->
 
     <!-- BOTÃO DE DEMONSTRAÇÃO ÚNICO (Oculto por padrão) -->
     <div id="btn-simular-wrap" style="display: none; justify-content: center; margin-top: 10px; margin-bottom: 22px;">
@@ -625,6 +632,51 @@
       <button class="btn-fechar" onclick="closeContato()">Fechar</button>
     </div>
   </div>
+
+    <!-- MODAL VISTORIA -->
+  <div class="modal-overlay" id="modal-vistoria"
+       onclick="if(event.target===this)closeVistoria()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="var(--brand)" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        Solicitar Vistoria
+      </div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">TIPO DE RISCO / VISTORIA</label>
+          <select class="form-select" id="vistoria-tipo">
+            <option value="">Selecione...</option>
+            <option value="Risco de Deslizamento">Risco de Deslizamento</option>
+            <option value="Imóvel com Rachaduras">Imóvel com Rachaduras</option>
+            <option value="Muro/Encosta com Risco">Muro/Encosta com Risco</option>
+            <option value="Árvore em Risco">Árvore em Risco de Queda</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ENDEREÇO DA VISTORIA</label>
+          <input class="form-input" type="text" id="vistoria-end"
+                 placeholder="Ex: Rua das Flores, 120">
+        </div>
+        <div class="form-group">
+          <label class="form-label">OBSERVAÇÕES (OPCIONAL)</label>
+          <textarea class="form-textarea" id="vistoria-desc"
+                    placeholder="Descreva o que está acontecendo..."></textarea>
+        </div>
+        <button class="btn-submit" onclick="submitVistoria()">Enviar Solicitação</button>
+        <button class="btn-fechar" style="margin-top:8px;" onclick="closeVistoria()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
 
     <!-- MODAL CONFIG -->
   <div class="modal-overlay" id="modal-config"

@@ -1,5 +1,5 @@
 /* ============================================================
-   MONITOR URBANO — app.js (COMPLETO + CORRIGIDO)
+   MONITOR URBANO — app.js (COMPLETO + CORRIGIDO + CÂMERA)
    ============================================================ */
 
 /* ── Dados ── */
@@ -84,7 +84,7 @@ function syncTudo() {
 }
 
 /* ============================================================
-   RENDER LISTA
+   RENDER LISTA (AGORA MOSTRA A FOTO SE TIVER)
    ============================================================ */
 function renderLista(lista, containerId) {
   const el = document.getElementById(containerId);
@@ -124,7 +124,10 @@ function renderLista(lista, containerId) {
           <div class="oc-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
             ${sanitize(o.local)} · ${sanitize(o.tempo)}
           </div>
-          <span class="oc-status ${stCls}">${sanitize(status)}</span>
+          
+          ${o.imagem ? `<img src="${o.imagem}" style="width:100%; height:130px; object-fit:cover; border-radius:8px; margin-top:10px; border:1px solid #e2e8f0; display:block;">` : ''}
+          
+          <span class="oc-status ${stCls}" style="margin-top: ${o.imagem ? '10px' : '4px'}; display:inline-block;">${sanitize(status)}</span>
         </div>
         <span class="oc-badge" style="background:${b.bg};color:${b.c};flex-shrink:0;">
           ${sanitize(o.urg)}
@@ -149,7 +152,7 @@ function renderLista(lista, containerId) {
 }
 
 /* ============================================================
-   LEAFLET — POPUP COM CRUD
+   LEAFLET — POPUP COM CRUD (AGORA MOSTRA FOTO)
    ============================================================ */
 function criarPopupHTML(o, idx) {
   const b      = BADGE_COR[o.urg] || BADGE_COR.Média;
@@ -176,6 +179,8 @@ function criarPopupHTML(o, idx) {
           </div>
         </div>
       </div>
+
+      ${o.imagem ? `<img src="${o.imagem}" style="width:100%; height:110px; object-fit:cover; border-radius:8px; margin-bottom:8px; border:1px solid rgba(0,0,0,0.08);">` : ''}
 
       ${o.desc ? `
         <div style="font-size:11px;color:#5A6A8A;margin-bottom:8px;
@@ -662,11 +667,69 @@ async function obterCoordenadasEndereco(enderecoRaw) {
 }
 
 /* ============================================================
+   SISTEMA DE FOTOS COM CÂMERA AUTOMÁTICA
+   ============================================================ */
+let fotoAtualBase64 = null;
+
+window.prepararFoto = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    fotoAtualBase64 = e.target.result;
+    const preview = document.getElementById('foto-preview');
+    const btnRemover = document.getElementById('btn-remover-foto');
+    if (preview) {
+      preview.src = fotoAtualBase64;
+      preview.style.display = 'block';
+      if(btnRemover) btnRemover.style.display = 'block';
+    }
+  };
+  reader.readAsDataURL(file);
+};
+
+window.removerFoto = function() {
+    fotoAtualBase64 = null;
+    document.getElementById('foto-preview').style.display = 'none';
+    document.getElementById('foto-preview').src = '';
+    document.getElementById('btn-remover-foto').style.display = 'none';
+    document.getElementById('foto-input').value = '';
+};
+
+function injetarBotaoFoto() {
+  if(document.getElementById('foto-container')) return;
+  const descInput = document.getElementById('desc-input');
+  if(!descInput) return;
+
+  const container = document.createElement('div');
+  container.id = 'foto-container';
+  container.style.marginTop = '12px';
+  
+  container.innerHTML = `
+    <input type="file" id="foto-input" accept="image/*" capture="environment" style="display: none;" onchange="prepararFoto(event)">
+    <button type="button" onclick="document.getElementById('foto-input').click()" 
+      style="width:100%; padding: 12px; border-radius: 10px; border: 1.5px dashed #2E6EF7; background: #F5F7FF; color: #0F2D7A; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+      Tirar Foto na Hora
+    </button>
+    <div style="position: relative;">
+        <img id="foto-preview" style="display: none; width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <button id="btn-remover-foto" type="button" onclick="removerFoto()" style="display:none; position: absolute; top: 18px; right: 8px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.4);">X</button>
+    </div>
+  `;
+  descInput.insertAdjacentElement('afterend', container);
+}
+
+/* ============================================================
    MODAL RELATAR
    ============================================================ */
 function openRelatar()  { 
   document.getElementById('modal-relatar').classList.add('open'); 
   initAutocomplete();
+  injetarBotaoFoto(); // INJETA O BOTÃO DA CÂMERA
 }
 
 function closeRelatar() {
@@ -698,7 +761,8 @@ async function submitRelatar() {
 
     dados.unshift({
       tipo, local: end, localCompleto: endExibido, desc: desc || '',
-      tempo: 'Agora', urg, status: 'Aberto', lat: coords.lat, lng: coords.lng, cep: coords.cep
+      tempo: 'Agora', urg, status: 'Aberto', lat: coords.lat, lng: coords.lng, cep: coords.cep,
+      imagem: fotoAtualBase64 // SALVA A IMAGEM NA LISTA
     });
 
     syncTudo();
@@ -709,6 +773,8 @@ async function submitRelatar() {
     document.getElementById('desc-input').value  = '';
     delete document.getElementById('end-input').dataset.lat;
     delete document.getElementById('end-input').dataset.lng;
+    
+    if(typeof removerFoto === 'function') removerFoto(); // LIMPA A FOTO
 
     toast(`✅ ${tipo} registrado com sucesso!`);
     
@@ -1219,12 +1285,81 @@ function notificarBadgeChat() {
     document.getElementById('nav-chat')?.classList.add('has-badge');
   }
 }
+/* ============================================================
+   BUSCA DE ENDEREÇO POR CEP + COORDENADAS PARA O MAPA
+   ============================================================ */
+function ativarBuscaCep(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  input.addEventListener('input', async function() {
+    // Pega o valor digitado e remove tudo que não for número
+    const apenasNumeros = this.value.replace(/\D/g, '');
+
+    // Se tiver exatamente 8 números, é um CEP válido
+    if (apenasNumeros.length === 8) {
+      
+      // Evita fazer a mesma busca duas vezes
+      if (this.dataset.ultimoCep === apenasNumeros) return;
+      this.dataset.ultimoCep = apenasNumeros;
+
+      toast('⏳ Buscando endereço...');
+
+      try {
+        // 1. Busca os dados do endereço (Rua, Bairro, Cidade) pelo ViaCEP
+        const respViaCep = await fetch(`https://viacep.com.br/ws/${apenasNumeros}/json/`);
+        const dataCep = await respViaCep.json();
+
+        if (dataCep.erro) {
+          toast('❌ CEP não encontrado.');
+          return;
+        }
+
+        const enderecoCompleto = `${dataCep.logradouro}, ${dataCep.bairro}, ${dataCep.localidade} - ${dataCep.uf}`;
+        
+        // Preenche o input
+        this.value = enderecoCompleto + ', Nº ';
+        this.dataset.cep = apenasNumeros;
+
+        toast('⏳ Marcando no mapa...');
+
+        // 2. Busca a Latitude e Longitude (Usando OpenStreetMap grátis no lugar do Google)
+        const queryUrl = `https://nominatim.openstreetmap.org/search?format=json&street=${encodeURIComponent(dataCep.logradouro)}&city=${encodeURIComponent(dataCep.localidade)}&state=${encodeURIComponent(dataCep.uf)}&country=Brazil&limit=1`;
+        
+        const respMapa = await fetch(queryUrl, { headers: { 'User-Agent': 'MonitorUrbanoJaboatao/1.0' } });
+        const dataMapa = await respMapa.json();
+
+        // Se achar as coordenadas, salva elas no input
+        if (dataMapa && dataMapa.length > 0) {
+           this.dataset.lat = dataMapa[0].lat;
+           this.dataset.lng = dataMapa[0].lon;
+           toast('✅ Endereço e Mapa prontos!');
+           
+           // Mostra aquele banner verdinho dizendo que achou a localização exata
+           if (typeof mostrarPreviewCEP === 'function') {
+               mostrarPreviewCEP(apenasNumeros, enderecoCompleto);
+           }
+        } else {
+           toast('⚠️ Endereço achado, mas sem pino exato no mapa.');
+        }
+
+        // Foca no input para o usuário colocar o número da casa
+        this.focus();
+
+      } catch (erro) {
+        toast('❌ Erro na busca do CEP.');
+      }
+    }
+  });
+}
 
 // INICIALIZAÇÃO DO APP
 document.addEventListener('DOMContentLoaded', () => {
     syncTudo();
     testarConexaoGemini();
+    
+    // ATIVA A BUSCA DE CEP NOS DOIS MODAIS
+    ativarBuscaCep('end-input');      // Campo de endereço do Modal Relatar
+    ativarBuscaCep('vistoria-end');   // Campo de endereço do Modal Vistoria
 });
-
-
 
