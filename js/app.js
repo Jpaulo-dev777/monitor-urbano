@@ -727,6 +727,83 @@ async function submitRelatar() {
 }
 
 /* ============================================================
+   SIMULAÇÃO DE ALERTA SEVERO (DEFESA CIVIL)
+   ============================================================ */
+function simularAlertaSevero() {
+  document.getElementById('modal-alerta-severo').classList.add('open');
+  
+  // Efeito bônus: Faz o celular vibrar para dar susto real na demonstração (se aberto no celular)
+  if (navigator.vibrate) {
+    navigator.vibrate([500, 200, 500]);
+  }
+}
+
+function fecharAlertaSevero() {
+  document.getElementById('modal-alerta-severo').classList.remove('open');
+}
+
+/* ============================================================
+   LÓGICA DO ALERTA AUTOMÁTICO (5 A 20 SEGUNDOS)
+   ============================================================ */
+let alertaAutoTimeout = null;
+let alertaAutoAtivo = false;
+
+function toggleAlertaAutomatico(element) {
+  // Muda a cor e a posição da bolinha do botão (liga/desliga)
+  const track = element.querySelector('.toggle-track');
+  track.classList.toggle('active');
+  
+  // Verifica se o botão ficou ativado ou desativado
+  alertaAutoAtivo = track.classList.contains('active');
+
+  if (alertaAutoAtivo) {
+    toast('⏰ Simulação ativada! Alertas a cada 5~20s.');
+    agendarProximoAlerta(); // Dá a partida no ciclo
+  } else {
+    toast('🛑 Simulação desativada.');
+    clearTimeout(alertaAutoTimeout); // Para o ciclo na hora
+  }
+}
+
+function agendarProximoAlerta() {
+  if (!alertaAutoAtivo) return; // Trava de segurança
+
+  // Sorteia um número entre 5000 (5s) e 20000 (20s)
+  const tempoSorteado = Math.floor(Math.random() * (20000 - 5000 + 1)) + 5000;
+
+  // Cria o cronômetro para disparar o alerta
+  alertaAutoTimeout = setTimeout(() => {
+    if (alertaAutoAtivo) {
+      simularAlertaSevero(); // Abre a tela preta que criamos
+      agendarProximoAlerta(); // Assim que exibe, já agenda o próximo!
+    }
+  }, tempoSorteado);
+}
+
+/* ============================================================
+   OCULTAR/MOSTRAR BOTÃO DE SIMULAR ALERTA
+   ============================================================ */
+function toggleVisibilidadeBotao(element) {
+  // Liga/desliga o visual da chavinha
+  const track = element.querySelector('.toggle-track');
+  track.classList.toggle('active');
+  
+  // Pega o estado atual (true se estiver ativado, false se desativado)
+  const estaAtivo = track.classList.contains('active');
+  
+  // Pega a caixinha do botão pelo ID que criamos no Passo 1
+  const btnWrap = document.getElementById('btn-simular-wrap');
+  
+  if (btnWrap) {
+    // Se a chave estiver ligada, mostra o botão (flex). Se não, oculta (none).
+    btnWrap.style.display = estaAtivo ? 'flex' : 'none';
+  }
+}
+
+
+
+
+/* ============================================================
    MODAIS DIVERSOS & CONFIGURAÇÕES
    ============================================================ */
 function openContato()   { document.getElementById('modal-contato').classList.add('open'); }
@@ -1128,3 +1205,6 @@ document.addEventListener('DOMContentLoaded', () => {
     syncTudo();
     testarConexaoGemini();
 });
+
+
+
