@@ -726,25 +726,45 @@ async function submitRelatar() {
   }
 }
 
-/* ============================================================
-   SIMULAÇÃO DE ALERTA SEVERO (DEFESA CIVIL)
-   ============================================================ */
+
 function simularAlertaSevero() {
+  // 1. Abre a tela vermelha
   document.getElementById('modal-alerta-severo').classList.add('open');
   
-  // Efeito bônus: Faz o celular vibrar para dar susto real na demonstração (se aberto no celular)
+  // 2. Busca o áudio no HTML e dá PLAY
+  const som = document.getElementById('somDefesaCivil');
+  if (som) {
+    som.currentTime = 0; // Começa do zero
+    som.play().catch(e => console.log("Áudio bloqueado", e));
+  }
+  
+  // 3. Vibra o celular
   if (navigator.vibrate) {
-    navigator.vibrate([500, 200, 500]);
+    navigator.vibrate([500, 200, 500, 200, 800, 200, 500]);
   }
 }
 
 function fecharAlertaSevero() {
+  // 1. Esconde a tela do alerta
   document.getElementById('modal-alerta-severo').classList.remove('open');
+  
+  // 2. Busca o áudio do HTML e dá PAUSE
+  const som = document.getElementById('somDefesaCivil');
+  if (som) {
+    som.pause();         // Manda parar o som IMEDIATAMENTE
+    som.currentTime = 0; // Rebobina para o início
+  }
+  
+  // 3. Para a vibração
+  if (navigator.vibrate) {
+    navigator.vibrate(0);
+  }
 }
 
 /* ============================================================
    LÓGICA DO ALERTA AUTOMÁTICO (5 A 20 SEGUNDOS)
    ============================================================ */
+
 let alertaAutoTimeout = null;
 let alertaAutoAtivo = false;
 

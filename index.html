@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="css/style.css"/>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   body {
@@ -958,11 +959,33 @@
     </div>
   </div>
 
-     <!-- MODAL ALERTA SEVERO (SIMULAÇÃO DE SISTEMA) -->
-  <!-- O "align-items: center;" foi adicionado aqui abaixo para centralizar na tela -->
+    <!-- ===== MODAL ALERTA SEVERO (SIMULAÇÃO DE SISTEMA) ===== -->
   <div class="modal-overlay" id="modal-alerta-severo" onclick="if(event.target===this)fecharAlertaSevero()" style="z-index: 999999; align-items: center;">
+    
+    <!-- Estilo da animação de piscar adicionado direto aqui para facilitar -->
+    <style>
+      @keyframes piscar-urgente {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.2; transform: scale(1.15); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      .icone-piscante {
+        animation: piscar-urgente 0.7s infinite ease-in-out; /* Pisca rápido a cada 0.7 segundos */
+      }
+    </style>
+
     <div class="alerta-severo-dialog">
-      <div class="alerta-severo-title">Alerta severo</div>
+      
+      <!-- Título com o ícone piscando -->
+      <div class="alerta-severo-title" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg class="icone-piscante" viewBox="0 0 24 24" fill="none" stroke="#ff5252" stroke-width="2.5" style="width: 28px; height: 28px;">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Alerta Severo
+      </div>
+
       <div class="alerta-severo-text">
         Defesa Civil:PE: ALERTA de DESLIZAMENTO em JABOATAO DOS GUARAPES. Moradores de areas de risco preparar para sair do local. Emergencia ligue 193 ou 199.
       </div>
@@ -975,6 +998,17 @@
 
 
 </div><!-- /phone -->
+
+</div><!-- /phone -->
+
+<!-- COLE O ÁUDIO AQUI, BEM ANTES DO SCRIPT -->
+<audio id="somDefesaCivil" loop>
+    <source src="sound/2026-05-01-14-17-30.mp3" type="audio/mp3">
+</audio>
+
+<script src="js/app.js"></script>
+</body>
+</html>
 
 
 
