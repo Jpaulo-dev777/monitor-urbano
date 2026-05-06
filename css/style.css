@@ -1474,3 +1474,146 @@ body::after {
 .alerta-severo-btn:active {
   background: rgba(100, 181, 246, 0.15);
 }
+
+/* ============================================
+   VIEW ALERTAS DE CHUVA
+   ============================================ */
+
+/* Esconde a barra de scroll dos KPIs da tela de chuva */
+#view-alertas-chuva .kpi-strip-scroll::-webkit-scrollbar,
+#view-alertas-chuva div::-webkit-scrollbar { display: none; }
+
+/* Banner principal de nível de alerta */
+#chuva-banner {
+  transition: background 0.6s ease, box-shadow 0.4s ease;
+}
+#chuva-banner:hover {
+  box-shadow: 0 8px 32px rgba(27,79,204,0.35) !important;
+}
+
+/* KPI cards da tela de chuva — herdam o estilo base,
+   mas precisam do ::before colorido */
+#view-alertas-chuva .kpi-card::before {
+  background: var(--brand);
+}
+
+/* Animação de entrada dos cards de KPI */
+#view-alertas-chuva .kpi-card {
+  animation: fadeIn 0.35s ease both;
+}
+#view-alertas-chuva .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+#view-alertas-chuva .kpi-card:nth-child(2) { animation-delay: 0.10s; }
+#view-alertas-chuva .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+#view-alertas-chuva .kpi-card:nth-child(4) { animation-delay: 0.20s; }
+
+/* Wrapper do gráfico SVG */
+#grafico-chuva-wrap {
+  -webkit-overflow-scrolling: touch;
+}
+#grafico-chuva-wrap::-webkit-scrollbar { display: none; }
+#grafico-chuva-svg {
+  display: block;
+  overflow: visible;
+}
+
+/* Timeline horária */
+#timeline-chuva {
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 6px;
+}
+#timeline-chuva::-webkit-scrollbar { display: none; }
+
+/* Cards individuais da timeline */
+#timeline-chuva > div {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: default;
+}
+#timeline-chuva > div:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+
+/* Cards de zona de risco */
+#lista-zonas-risco > div {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: default;
+}
+#lista-zonas-risco > div:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* Cards do histórico de alertas */
+#historico-alertas-chuva > div {
+  transition: opacity 0.2s ease;
+  animation: fadeIn 0.3s ease both;
+}
+
+/* Badge de atualização — pisca suavemente enquanto carrega */
+#chuva-atualizado {
+  transition: background 0.3s, color 0.3s;
+  white-space: nowrap;
+}
+
+/* Texto do nível no banner — animação ao trocar */
+#chuva-nivel-titulo {
+  transition: opacity 0.3s ease;
+}
+
+/* Valor mm/h no banner */
+#chuva-mm-valor {
+  transition: color 0.4s ease;
+  line-height: 1;
+}
+
+/* Botão emitir alerta — pulsa levemente para chamar atenção */
+@keyframes pulsoAlerta {
+  0%,100% { box-shadow: 0 6px 20px rgba(220,38,38,0.35); }
+  50%      { box-shadow: 0 8px 32px rgba(220,38,38,0.60); }
+}
+#view-alertas-chuva .btn-full {
+  animation: pulsoAlerta 2.4s ease-in-out infinite;
+}
+
+/* Responsivo: no mobile a view ocupa toda a altura disponível */
+@media screen and (max-width: 480px) {
+  #view-alertas-chuva {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  }
+  #grafico-chuva-svg {
+    min-width: 280px !important;
+  }
+}
+
+/* Tema escuro — ajustes específicos */
+[data-theme="dark"] #chuva-banner {
+  border: 1px solid rgba(61,123,255,0.20);
+}
+[data-theme="dark"] #timeline-chuva > div {
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] #lista-zonas-risco > div {
+  background: var(--surface) !important;
+}
+[data-theme="dark"] #chuva-atualizado {
+  background: rgba(61,123,255,0.15) !important;
+  color: var(--brand) !important;
+}
+
+/* Nível CRÍTICO — borda vermelha pulsando no banner */
+@keyframes bordaCritica {
+  0%,100% { box-shadow: 0 6px 24px rgba(220,38,38,0.25), 0 0 0 2px rgba(220,38,38,0.40); }
+  50%      { box-shadow: 0 6px 24px rgba(220,38,38,0.50), 0 0 0 4px rgba(220,38,38,0.20); }
+}
+#chuva-banner.nivel-critico {
+  animation: bordaCritica 1.2s ease-in-out infinite;
+}
+
+/* Nível ALTO — borda laranja pulsando */
+@keyframes bordaAlto {
+  0%,100% { box-shadow: 0 6px 24px rgba(217,119,6,0.25), 0 0 0 2px rgba(217,119,6,0.35); }
+  50%      { box-shadow: 0 6px 24px rgba(217,119,6,0.45), 0 0 0 4px rgba(217,119,6,0.15); }
+}
+#chuva-banner.nivel-alto {
+  animation: bordaAlto 1.6s ease-in-out infinite;
+}
