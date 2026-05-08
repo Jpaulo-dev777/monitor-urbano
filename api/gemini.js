@@ -1,10 +1,8 @@
 export default async function handler(req, res) {
-  // 1. Só aceita requisições POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Use o método POST.' });
   }
 
-  // 2. Pega a Chave da API configurada no Vercel
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'A Chave da API (GEMINI_API_KEY) não foi encontrada no Vercel.' });
@@ -16,10 +14,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Nenhum texto recebido do chat.' });
     }
 
-    // 3. Comunicação com a API do Google (Usando Gemini 1.5 Flash)
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-    
-    // FORMATO EXATO QUE O GOOGLE EXIGE:
+    // ✅ Modelo atualizado para 1.5-flash (gratuito e estável)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
     const payload = {
       contents: [{
         parts: [{ text: textoUsuario }]
@@ -34,7 +31,6 @@ export default async function handler(req, res) {
 
     const googleData = await googleResponse.json();
 
-    // 4. Se o Google barrar, repassamos o motivo exato pro frontend
     if (!googleResponse.ok) {
       return res.status(googleResponse.status).json({ 
         error: 'Erro na API do Google', 
@@ -42,7 +38,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // 5. Sucesso! Pega a resposta da IA e devolve
     const respostaIA = googleData.candidates[0].content.parts[0].text;
     return res.status(200).json({ text: respostaIA });
 
