@@ -671,85 +671,20 @@ async function obterCoordenadasEndereco(enderecoRaw) {
    ============================================================ */
 let fotoAtualBase64 = null;
 
-// ✅ SUBSTITUIR PELO BLOCO ABAIXO:
-
-/* ============================================================
-   COMPRESSÃO DE IMAGEM — reduz ~70% do tamanho antes de salvar
-   ============================================================ */
-async function comprimirImagem(base64, maxWidth = 800, qualidade = 0.7) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = base64;
-
-    img.onload = () => {
-      const canvas  = document.createElement('canvas');
-      const ratio   = Math.min(maxWidth / img.width, 1); // nunca aumenta, só reduz
-      canvas.width  = Math.round(img.width  * ratio);
-      canvas.height = Math.round(img.height * ratio);
-
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      resolve(canvas.toDataURL('image/jpeg', qualidade));
-    };
-
-    img.onerror = () => {
-      // Se falhar a compressão, retorna a imagem original sem travar o app
-      console.warn('[Foto] Falha ao comprimir, usando original.');
-      resolve(base64);
-    };
-  });
-}
-
-window.prepararFoto = async function(event) {
+window.prepararFoto = function(event) {
   const file = event.target.files[0];
   if (!file) return;
-
-  const btnRemover = document.getElementById('btn-remover-foto');
-  const preview    = document.getElementById('foto-preview');
-
-  // Feedback visual imediato enquanto comprime
-  if (preview) {
-    preview.style.opacity  = '0.4';
-    preview.style.display  = 'block';
-  }
-
   const reader = new FileReader();
-
-  reader.onload = async function(e) {
-    try {
-      // ✅ Comprime antes de salvar (reduz ~70% do tamanho)
-      fotoAtualBase64 = await comprimirImagem(e.target.result, 800, 0.7);
-
-      if (preview) {
-        preview.src           = fotoAtualBase64;
-        preview.style.opacity = '1'; // restaura opacidade após comprimir
-        preview.style.display = 'block';
-      }
+  reader.onload = function(e) {
+    fotoAtualBase64 = e.target.result;
+    const preview    = document.getElementById('foto-preview');
+    const btnRemover = document.getElementById('btn-remover-foto');
+    if (preview) {
+      preview.src = fotoAtualBase64;
+      preview.style.display = 'block';
       if (btnRemover) btnRemover.style.display = 'block';
-
-      // Mostra o tamanho economizado no toast
-      const originalKB  = Math.round(e.target.result.length  / 1024);
-      const comprimidoKB = Math.round(fotoAtualBase64.length / 1024);
-      const economia     = Math.round((1 - comprimidoKB / originalKB) * 100);
-
-      if (economia > 0) {
-        toast(`📸 Foto comprimida! Economia de ${economia}% (${originalKB}KB → ${comprimidoKB}KB)`);
-      } else {
-        toast('📸 Foto adicionada!');
-      }
-
-    } catch (err) {
-      console.error('[Foto] Erro inesperado:', err);
-      // Fallback: usa a foto original sem comprimir
-      fotoAtualBase64 = e.target.result;
-      if (preview) { preview.src = fotoAtualBase64; preview.style.opacity = '1'; }
-      if (btnRemover) btnRemover.style.display = 'block';
-      toast('📸 Foto adicionada (sem compressão).');
     }
   };
-
-  reader.onerror = () => toast('❌ Erro ao ler a foto. Tente novamente.');
   reader.readAsDataURL(file);
 };
 
@@ -1746,12 +1681,12 @@ function confirmarEmissaoAlerta() {
   const msgCus = document.getElementById('alerta-chuva-msg')?.value?.trim() || '';
 
   // MELHORIA #5 — pede confirmação antes de emitir alertas críticos/altos
-  if (nivel === 'CRÍTICO' || nivel === 'ALTO') {
-    const confirmar = confirm(
-      `⚠️ Confirma emissão de Alerta Nível ${nivel}?\n\nÁrea: ${area}\n\nEsta ação notificará a população e disparará o alerta sonoro.`
-    );
-    if (!confirmar) return;
-  }
+  // if (nivel === 'CRÍTICO' || nivel === 'ALTO') {
+  //   const confirmar = confirm(
+  //     `⚠️ Confirma emissão de Alerta Nível ${nivel}?\n\nÁrea: ${area}\n\nEsta ação notificará a população e disparará o alerta sonoro.`
+  //   );
+  //   if (!confirmar) return;
+  // }
 
   const chApp   = document.getElementById('ch-app')?.checked;
   const chSms   = document.getElementById('ch-sms')?.checked;
