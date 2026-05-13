@@ -1175,21 +1175,28 @@ REGRAS:
 
 let historicoChat = [];
 
+// js/app.js — substituir apenas esta função
+
 async function chamarGemini(textoDoUsuario) {
   try {
-    const response = await fetch('/api/gemini', {
+    const response = await fetch('/api/gemini', { // ← endpoint continua o mesmo
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texto: textoDoUsuario })
+      body: JSON.stringify({ texto: textoDoUsuario }),
     });
+
     const data = await response.json();
+
     if (!response.ok) {
-      const motivo = data.detalhes ? JSON.stringify(data.detalhes) : data.error;
+      const motivo = data.detalhes
+        ? JSON.stringify(data.detalhes)
+        : data.error;
       throw new Error(`Erro retornado pelo servidor: ${motivo}`);
     }
+
     return data.text;
   } catch (error) {
-    console.error('Erro na API:', error);
+    console.error('Erro na API (DeepSeek):', error);
     throw error;
   }
 }
